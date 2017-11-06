@@ -1,5 +1,8 @@
 version: '3'
 services:
+  ##
+  # STELLAR CORE DB
+  ##
   core-db:
     image: postgres
     ports:
@@ -8,6 +11,9 @@ services:
       - POSTGRES_USER=stellar
       - POSTGRES_PASSWORD=1q2w3e
       - POSTGRES_DB=core
+  ##
+  # STELLAR HORIZON DB
+  ##
   horizon-db:
     image: postgres
     ports:
@@ -16,6 +22,9 @@ services:
       - POSTGRES_USER=stellar
       - POSTGRES_PASSWORD=1q2w3e
       - POSTGRES_DB=horizon
+  ##
+  # STELLAR CORE
+  ##
   core:
     restart: always
     build: ./docker-stellar-core
@@ -31,6 +40,9 @@ services:
       - core-db
     depends_on:
       - core-db
+  ##
+  # STELLAR HORIZON INIT DB
+  ##
   horizon-init:
     restart: on-failure
     build: ./docker-stellar-horizon
@@ -41,6 +53,9 @@ services:
       - DATABASE_URL=postgres://stellar:1q2w3e@horizon-db/horizon?sslmode=disable
     depends_on:
       - horizon-db
+  ##
+  # STELLAR HORIZON
+  ##
   horizon:
     restart: always
     build: ./docker-stellar-horizon
@@ -58,3 +73,30 @@ services:
     depends_on:
       - horizon-init
       - core
+  ##
+  # GETH
+  #
+  # seems it will not work if container resides in vbox
+  # 'Fatal: Error starting protocol stack: sync /data/geth/chaindata: invalid argument'
+  ##
+  geth:
+    restart: always
+    image: ethereum/client-go
+    command:
+      - --rpc
+      - --rpcaddr
+      - 0.0.0.0
+      - --rpccorsdomain
+      - "*"
+      - --rpcapi
+      - "all"
+      - --testnet
+      - --cache=2048
+      - --fast
+      - --datadir
+      - /data
+    ports:
+      - 8545
+      - 30303:30303
+    volumes:
+      - ./volumes/geth/:/data
