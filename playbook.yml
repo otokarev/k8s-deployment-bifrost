@@ -1,0 +1,56 @@
+---
+- hosts: all
+  sudo: true
+
+  vars:
+    # TODO: remove it, set password in cli
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+  ##
+  # Fix Python version
+  ##
+  - name: Install python 2.7
+    raw: apt-get update -qq && apt-get install -qq python2.7
+  - name: check if softlink exists
+    stat:
+      path: /usr/bin/python
+    register: python_file
+  - name: create softlink for python 2.7
+    raw: ln -s /usr/bin/python2.7 /usr/bin/python
+    when: python_file.stat.islnk is not defined
+  ##
+  # Install Docker
+  ##
+  - name: Update APT cache
+    apt:
+      update_cache: yes
+  - name: Install dependencies
+    apt:
+      name: "{{item}}"
+      state: present
+    with_items:
+      - python-pip
+      - expect
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+  - name: Install pip dependencies
+    shell: pip install docker-py
+  - name: Install Docker repo gpg
+    shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  #TODO: verify fingerprint
+  - name: Add Docker repo
+    shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - name: Install Docker CE
+    apt:
+      update_cache: yes
+      #TODO: latest version is not good for production, choose stable one
+      name: docker-ce
+      state: present
+  - name: Install Docker Compose
+    shell: |
+      curl -L https://github.com/docker/compose/releases/download/1.17.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+      chmod +x /usr/local/bin/docker-compose
+
+

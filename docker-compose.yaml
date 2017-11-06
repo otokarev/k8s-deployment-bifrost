@@ -1,0 +1,60 @@
+version: '3'
+services:
+  core-db:
+    image: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_USER=stellar
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=core
+  horizon-db:
+    image: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_USER=stellar
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=horizon
+  core:
+    restart: always
+    build: ./docker-stellar-core
+    ports:
+      - 11626
+    volumes:
+      - /mnt/data/otokarev/work/umbre/bifrost-provisioning/core:/data
+      - ./volumes/core/configs:/configs
+    environment:
+      - NONEWHIST=1
+      - DATABASE_URL="postgres://stellar:1q2w3e@core-db/core?sslmode=disable"
+    links:
+      - core-db
+    depends_on:
+      - core-db
+  horizon-init:
+    restart: on-failure
+    build: ./docker-stellar-horizon
+    command:
+      - db
+      - init
+    environment:
+      - DATABASE_URL=postgres://stellar:1q2w3e@horizon-db/horizon?sslmode=disable
+    depends_on:
+      - horizon-db
+  horizon:
+    restart: always
+    build: ./docker-stellar-horizon
+    command:
+      - --db-url=postgres://stellar:1q2w3e@horizon-db/horizon?sslmode=disable
+      - --stellar-core-db-url=postgres://stellar:1q2w3e@core-db/core?sslmode=disable
+      - --ingest=true
+      - --stellar-core-url=http://core:11626
+    ports:
+      - 8000
+    links:
+      - horizon-db
+      - core
+      - core-db
+    depends_on:
+      - horizon-init
+      - core

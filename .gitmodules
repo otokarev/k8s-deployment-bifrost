@@ -1,0 +1,6 @@
+[submodule "docker-stellar-horizon"]
+	path = docker-stellar-horizon
+	url = git@github.com:otokarev/docker-stellar-horizon.git
+[submodule "docker-stellar-core"]
+	path = docker-stellar-core
+	url = git@github.com:otokarev/docker-stellar-core.git
