@@ -1,27 +1,9 @@
 version: '3'
+
+volumes:
+  geth-data:
+
 services:
-  ##
-  # STELLAR CORE DB
-  ##
-  core-db:
-    image: postgres
-    ports:
-      - 5432
-    environment:
-      - POSTGRES_USER=stellar
-      - POSTGRES_PASSWORD=1q2w3e
-      - POSTGRES_DB=core
-  ##
-  # STELLAR HORIZON DB
-  ##
-  horizon-db:
-    image: postgres
-    ports:
-      - 5432
-    environment:
-      - POSTGRES_USER=stellar
-      - POSTGRES_PASSWORD=1q2w3e
-      - POSTGRES_DB=horizon
   ##
   # STELLAR CORE
   ##
@@ -40,9 +22,19 @@ services:
       - core-db
     depends_on:
       - core-db
+  core-db:
+    image: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_USER=stellar
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=core
   ##
-  # STELLAR HORIZON INIT DB
+  # STELLAR HORIZON
   ##
+
+  # horizon-init: Restart until exit with 0 status that means that DB schema loaded successfully
   horizon-init:
     restart: on-failure
     build: ./docker-stellar-horizon
@@ -53,9 +45,6 @@ services:
       - DATABASE_URL=postgres://stellar:1q2w3e@horizon-db/horizon?sslmode=disable
     depends_on:
       - horizon-db
-  ##
-  # STELLAR HORIZON
-  ##
   horizon:
     restart: always
     build: ./docker-stellar-horizon
@@ -65,7 +54,7 @@ services:
       - --ingest=true
       - --stellar-core-url=http://core:11626
     ports:
-      - 8000
+      - 8000:8000
     links:
       - horizon-db
       - core
@@ -73,6 +62,14 @@ services:
     depends_on:
       - horizon-init
       - core
+  horizon-db:
+    image: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_USER=stellar
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=horizon
   ##
   # GETH
   #
@@ -89,14 +86,55 @@ services:
       - --rpccorsdomain
       - "*"
       - --rpcapi
-      - "all"
+      - "net,eth"
       - --testnet
       - --cache=2048
       - --fast
       - --datadir
       - /data
     ports:
-      - 8545
+      - 8545:8545
       - 30303:30303
     volumes:
-      - ./volumes/geth/:/data
+      - geth-data:/data
+  ##
+  # BIFROST
+  ##
+  bifrost-init:
+    restart: on-failure
+    build: ./docker-stellar-bifrost
+    command: ["init"]
+    environment:
+      BIFROST_DB_DSN: postgres://stellar:1q2w3e@bifrost-db/bifrost?sslmode=disable
+  bifrost:
+    restart: always
+    build: ./docker-stellar-bifrost
+    command: ["server"]
+    environment:
+      BIFROST_CFG: >
+        {"ethereum": {"master_public_key": "xpub6C79eBsW2XQbzfXFsRv51Lac6Ckx5nyqf9cUmFr1fuAEHGXmpq8oPNMqCpH1jTdwP3s5SD644R8KK4cVytk9Jxcxcb7JsfNxcGNRbG5q4pq","network_id": "3","minimum_value_eth": "0.00001"},"stellar": {"token_asset_code": "TOKE","needs_authorize": "true","network_passphrase": "Test SDF Network ; September 2015"},"database": {"type": "postgres"}}
+      BIFROST_ETHEREUM_RPC_SERVER: geth:8545
+      BIFROST_STELLAR_ISSUER_PUBLIC_KEY: GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T
+      BIFROST_STELLAR_SIGNER_SECRET_KEY: SD4DFZ433RUGNCMCG4JGWK47R5KOHQOS4T5LXGLGBLY7ZLBUZQTTONVQ
+      BIFROST_STELLAR_HORIZON: http://horizon:8000
+      BIFROST_DB_DSN: postgres://stellar:1q2w3e@bifrost-db/bifrost?sslmode=disable
+    ports:
+      - 8000
+    links:
+      - bifrost-db
+      - geth
+      - horizon
+    depends_on:
+      - horizon
+      - geth
+      - bifrost-init
+    volumes:
+      - ./volumes/bifrost/configs:/configs
+  bifrost-db:
+    image: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_USER=stellar
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=bifrost

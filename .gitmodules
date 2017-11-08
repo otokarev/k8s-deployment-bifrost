@@ -4,3 +4,6 @@
 [submodule "docker-stellar-core"]
 	path = docker-stellar-core
 	url = git@github.com:otokarev/docker-stellar-core.git
+[submodule "docker-stellar-bifrost"]
+	path = docker-stellar-bifrost
+	url = git@github.com:otokarev/docker-stellar-bifrost.git
