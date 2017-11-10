@@ -82,7 +82,7 @@ services:
     restart: always
     image: ethereum/client-go
     # geth is too greedy. let's throttle it a bit
-    cpus: 0.5
+    cpus: 2
     mem_limit: '512m'
     command:
       - --rpc
