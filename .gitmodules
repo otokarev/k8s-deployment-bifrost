@@ -7,3 +7,6 @@
 [submodule "docker-stellar-bifrost"]
 	path = docker-stellar-bifrost
 	url = git@github.com:otokarev/docker-stellar-bifrost.git
+[submodule "docker-stellar-bifrost-client"]
+	path = docker-stellar-bifrost-client
+	url = git@github.com:otokarev/docker-stellar-bifrost-client.git

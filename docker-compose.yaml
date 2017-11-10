@@ -1,4 +1,4 @@
-version: '3'
+version: '2.2'
 
 volumes:
   geth-data:
@@ -23,6 +23,7 @@ services:
     depends_on:
       - core-db
   core-db:
+    restart: always
     image: postgres
     ports:
       - 5432
@@ -54,7 +55,7 @@ services:
       - --ingest=true
       - --stellar-core-url=http://core:11626
     ports:
-      - 8000:8000
+      - 8031:8000
     links:
       - horizon-db
       - core
@@ -63,6 +64,7 @@ services:
       - horizon-init
       - core
   horizon-db:
+    restart: always
     image: postgres
     ports:
       - 5432
@@ -79,6 +81,9 @@ services:
   geth:
     restart: always
     image: ethereum/client-go
+    # geth is too greedy. let's throttle it a bit
+    cpus: 0.5
+    mem_limit: '512m'
     command:
       - --rpc
       - --rpcaddr
@@ -88,7 +93,7 @@ services:
       - --rpcapi
       - "net,eth"
       - --testnet
-      - --cache=2048
+      - --cache=512
       - --fast
       - --datadir
       - /data
@@ -119,7 +124,7 @@ services:
       BIFROST_STELLAR_HORIZON: http://horizon:8000
       BIFROST_DB_DSN: postgres://stellar:1q2w3e@bifrost-db/bifrost?sslmode=disable
     ports:
-      - 8000
+      - 8032:8000
     links:
       - bifrost-db
       - geth
@@ -131,6 +136,7 @@ services:
     volumes:
       - ./volumes/bifrost/configs:/configs
   bifrost-db:
+    restart: always
     image: postgres
     ports:
       - 5432
@@ -138,3 +144,20 @@ services:
       - POSTGRES_USER=stellar
       - POSTGRES_PASSWORD=1q2w3e
       - POSTGRES_DB=bifrost
+  ##
+  # BIFROST WEB APP
+  ##
+  bifrost-app:
+    restart: always
+    build: ./docker-stellar-bifrost-client
+    ports:
+      - 8030:3000
+    depends_on:
+      - bifrost
+      - horizon
+    environment:
+      - HORIZON_URL=http://localhost:8031
+      - BIFROST_URL=http://localhost:8032
+      - ISSUING_ACCOUNT=GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T
+      - NODE_ENV=development
+      - ALLOW_HORIZON_HTTP=on
