@@ -1,0 +1,21 @@
+server {
+    listen $PORT;
+    server_name $HOST;
+
+    ssl                  on;
+    ssl_certificate      $SSL_CERT_PATH;
+    ssl_certificate_key  $SSL_CERT_KEY_PATH;
+
+    ssl_prefer_server_ciphers on;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_tickets off;
+
+    location / {
+        proxy_pass $BACKEND_URL;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}

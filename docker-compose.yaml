@@ -63,6 +63,22 @@ services:
     depends_on:
       - horizon-init
       - core
+  horizon-proxy:
+    image: nginx
+    volumes:
+     - ./https-proxy.template:/etc/nginx/conf.d/https-proxy.template
+     - ./volumes/horizon/certs:/certs
+    ports:
+     - "443:443"
+    environment:
+     - HOST=_
+     - PORT=443
+     - BACKEND_URL=http://horizon:8000
+     - SSL_CERT_PATH=/certs/cert.crt
+     - SSL_CERT_KEY_PATH=/certs/cert.key
+    command: /bin/bash -c "envsubst '$$HOST $$PORT $$BACKEND_URL $$SSL_CERT_PATH $$SSL_CERT_KEY_PATH' < /etc/nginx/conf.d/https-proxy.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    depends_on:
+      - horizon
   horizon-db:
     restart: always
     image: postgres
@@ -82,8 +98,8 @@ services:
     restart: always
     image: ethereum/client-go
     # geth is too greedy. let's throttle it a bit
-    cpus: 2
-    mem_limit: '512m'
+    cpus: 3
+    mem_limit: '1024m'
     command:
       - --rpc
       - --rpcaddr
@@ -93,8 +109,8 @@ services:
       - --rpcapi
       - "net,eth"
       - --testnet
-      - --cache=512
-      - --fast
+      - --cache=2048
+      #- --light
       - --datadir
       - /data
     ports:
@@ -154,10 +170,9 @@ services:
       - 8030:3000
     depends_on:
       - bifrost
-      - horizon
+      - horizon-proxy
     environment:
-      - HORIZON_URL=http://localhost:8031
+      - HORIZON_URL=https://localhost:8033
       - BIFROST_URL=http://localhost:8032
       - ISSUING_ACCOUNT=GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T
       - NODE_ENV=development
-      - ALLOW_HORIZON_HTTP=on
