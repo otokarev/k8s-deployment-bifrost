@@ -39,6 +39,7 @@ vagrant up
 * **bifrost-init** - the service initializing Bifrost DB 
 * **bifrost-db** - Bitfrost DB
 * **horizon** - Stellar Horizon server
+* **horizon-proxy** - Stellar Horizon behind HTTPS (nginx)
 * **horizon-init** - the service initializing Horizon DB
 * **horizon-db** - Horizon DB
 * **core** - Stellar Core server
