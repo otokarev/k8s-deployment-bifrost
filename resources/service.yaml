@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: stellar
+spec:
+  type: LoadBalancer
+  selector:
+    app: stellar
+  ports:
+  - protocol: TCP
+    port: 11625
+    name: core-http
+  - protocol: TCP
+    port: 8000
+    name: horizon-http
+  - protocol: TCP
+    port: 11626
+    name: core-peer
+  - protocol: TCP
+    port: 8545
+    name: geth-rpc

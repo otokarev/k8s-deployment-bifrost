@@ -99,7 +99,7 @@ services:
     image: ethereum/client-go
     # geth is too greedy. let's throttle it a bit
     cpus: 3
-    mem_limit: '1024m'
+    mem_limit: '2048m'
     command:
       - --rpc
       - --rpcaddr
@@ -110,7 +110,7 @@ services:
       - "net,eth"
       - --testnet
       - --cache=2048
-      #- --light
+      - --light
       - --datadir
       - /data
     ports:

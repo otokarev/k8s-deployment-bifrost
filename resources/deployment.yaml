@@ -1,0 +1,140 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: stellar
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: "100%"
+      maxSurge: "100%"
+  template:
+    metadata:
+      labels:
+        app: stellar
+    spec:
+      containers:
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.09
+          command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                    "-instances=${DATABASE_INSTANCE}",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+            - name: cloudsql
+              mountPath: /cloudsql
+        - name: stellar-core
+          image: "${STELLAR_CORE_IMAGE}"
+          ports:
+          - name: core-http
+            containerPort: 11625
+          - name: core-peer
+            containerPort: 11626
+          volumeMounts:
+          - name: stellar-core-cfg
+            mountPath: /configs
+          - name: core-data
+            mountPath: /data
+          env:
+            - name: NONEWHIST
+              value: "1"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: stellar-database-credentials
+                  key: STELLAR_CORE_DATABASE_URL
+
+        - name: stellar-horizon
+          image: "${STELLAR_HORIZON_IMAGE}"
+          command:
+            - "sh"
+            - "-c"
+            - "horizon db init; horizon --db-url=$(DATABASE_URL) --stellar-core-db-url=$(STELLAR_CORE_DATABASE_URL) --ingest=true --stellar-core-url=http://$(STELLAR_SERVICE_HOST):$(STELLAR_SERVICE_PORT_CORE_PEER)"
+          ports:
+          - name: horizon-http
+            containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: stellar-database-credentials
+                  key: STELLAR_HORIZON_DATABASE_URL
+            - name: STELLAR_CORE_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: stellar-database-credentials
+                  key: STELLAR_CORE_DATABASE_URL
+            - name: INGEST
+              value: "true"
+
+        - name: geth
+          image: ethereum/client-go
+          command:
+            - geth
+            - --rpc
+            - --rpcaddr=0.0.0.0
+            - --rpccorsdomain=*
+            - --rpcapi=net,eth
+            - --testnet
+            - --cache=2048
+            - --light
+            - --datadir=/data
+          env:
+            - name: PATH
+              value: "$PATH:/usr/local/bin/"
+          ports:
+          - name: geth-rpc
+            containerPort: 8545
+          - name: geth-peers
+            containerPort: 3030
+          volumeMounts:
+          - name: geth-data
+            mountPath: /data
+
+        - name: stellar-bifrost
+          image: "${STELLAR_BIFROST_IMAGE}"
+          command: ["sh", "-c", "/entry.sh init; /entry.sh server"]
+          env:
+          - name: BIFROST_CFG
+            valueFrom:
+              secretKeyRef:
+                name: stellar-bifrost-credentials
+                key: STELLAR_BIFROST_CFG
+          - name: BIFROST_ETHEREUM_RPC_SERVER
+            value: "$(STELLAR_SERVICE_HOST):$(STELLAR_SERVICE_PORT_GETH_RPC)"
+          - name: BIFROST_STELLAR_HORIZON
+            value: "http://$(STELLAR_SERVICE_HOST):$(STELLAR_SERVICE_PORT_HORIZON_HTTP)"
+          - name: BIFROST_DB_DSN
+            valueFrom:
+              secretKeyRef:
+                name: stellar-bifrost-credentials
+                key: STELLAR_BIFROST_DATABASE_URL
+          ports:
+          - name: bifrost-http
+            containerPort: 8000
+
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: stellar-core-cfg
+          secret:
+            secretName: stellar-core-cfg
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
+        - name: geth-data
+          gcePersistentDisk:
+            pdName: "${GETH_DATA_DISK}"
+            fsType: ext4
+        - name: core-data
+          gcePersistentDisk:
+            pdName: "${STELLAR_CORE_DATA_DISK}"
+            fsType: ext4
