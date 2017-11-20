@@ -61,38 +61,60 @@ Run:
 ```text
 source ./config.sh
 ```
-
-After that config settings can be used in commands mentioned below.
-
-Code like
+### Static IP
+Create one for the service if not exists yet
 ```text
-envsubst < resource.yaml | command
+gcloud compute addresses create stellar-bifrost-static-ip --region=$REGION
 ```
-will read `resource.yaml`, substitute environment variables that we have just set and pass the result to the pipe.
+Update `config.sh` with new value.
+
+### PostgreSQL
+```text
+#Create intstance:
+gcloud sql instances create $SQL_INSTANCE_ID \
+    --no-backup \
+    --database-version=POSTGRES_9_6 \
+    --storage-type=HDD \
+    --region=$REGION \
+    --cpu=1 \
+    --memory=3840MiB \
+    --storage-auto-increase
+
+#Create user:
+gcloud sql users create stellar '*' --password=1q2w3e --instance=$SQL_INSTANCE_ID
+
+#Create databases:
+gcloud sql databases create core  --instance=$SQL_INSTANCE_ID
+gcloud sql databases create horizon  --instance=$SQL_INSTANCE_ID
+gcloud sql databases create bifrost  --instance=$SQL_INSTANCE_ID
+
+```
+Delete SQL instance:
+```text
+gcloud sql instances delete $SQL_INSTANCE_ID
+```
 
 ### Cluster
 Create cluster:
 ```text
-gcloud container clusters create stellar-bifrost \
+gcloud container clusters create $CLUSTER_NAME \
     --no-enable-cloud-logging \
     --enable-cloud-monitoring \
     --no-enable-cloud-endpoints \
     --num-nodes=2 \
     --machine-type=n1-standard-2 \
-    --zone=europe-west1-d
-```
-Load cluster credentials:
-```text
-gcloud container clusters get-credentials stellar-bifrost --zone europe-west1-d --project lucid-course-142515
+    --zone=$ZONE
+#Load cluster credentials:
+gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT
 ```
 Delete cluster:
 ```text
-gcloud container clusters delete stellar-bifrost
+gcloud container clusters delete $CLUSTER_NAME --zone=$ZONE
 ```
 ### Volumes
 ```text
-gcloud compute disks create core-data --size 200GB --type pd-standard --zone europe-west1-d
-gcloud compute disks create geth-data --size 200GB --type pd-standard --zone europe-west1-d
+gcloud compute disks create core-data --size 200GB --type pd-standard --zone $ZONE
+gcloud compute disks create geth-data --size 200GB --type pd-standard --zone $ZONE
 ```
 
 ### Secrets
@@ -114,16 +136,27 @@ kubectl create secret generic stellar-database-credentials \
 kubectl create secret generic stellar-bifrost-credentials \
     --from-literal=STELLAR_BIFROST_CFG="${STELLAR_BIFROST_CFG}" \
     --from-literal=STELLAR_BIFROST_DATABASE_URL="${STELLAR_BIFROST_DATABASE_URL}"
+    
+#Deploy Horizon Proxy SSL credentials and nginx config
+kubectl create secret generic stellar-horizon-proxy-secret \
+    --from-file=./volumes/horizon/certs/cert.crt \
+    --from-file=./volumes/horizon/certs/cert.key \
+    --from-file=./https-proxy.template
+```
+Delete secrets:
+```text
+kubectl delete secret --all
 ```
 ### Deployment
 Deploy Stellar node application's pod:
 ```
+envsubst < resources/service.yaml | kubectl create -f -
 envsubst < resources/deployment.yaml | kubectl create -f -
 ```
 ###Maintenance
 Pod cannot be launched if disk `core-data` is attached to any compute. To detach run in console:
 ```text
-for i in `gcloud compute instances list | gawk 'NR>1 {print $1}'`; do gcloud compute instances detach-disk $i --zone europe-west1-d --disk=core-data; done
+for i in `gcloud compute instances list | gawk 'NR>1 {print $1}'`; do gcloud compute instances detach-disk $i --zone $ZONE --disk=core-data; done
 ```
 
 To modify the deployment:
@@ -148,7 +181,7 @@ kubectl delete service stellar
 ```
 Launch bash in Stellar core container:
 ```text
-kubectl exec -it <pod name something like stellar-885092335-xc8sr, can be found in `kubectl get pods` output> -c core /bin/bash
+kubectl exec -it `kubectl get pods -o go-template="{{ (index .items 0).metadata.name }}"` -c core sh
 ```
 Describe first pod from the list:
 ```text

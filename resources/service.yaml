@@ -4,18 +4,22 @@ metadata:
   name: stellar
 spec:
   type: LoadBalancer
+  loadBalancerIP: "${LOAD_BALANCER_IP}"
   selector:
     app: stellar
   ports:
   - protocol: TCP
-    port: 11625
-    name: core-http
-  - protocol: TCP
-    port: 8000
+    port: 8001
     name: horizon-http
   - protocol: TCP
-    port: 11626
-    name: core-peer
+    port: 443
+    name: horizon-https
   - protocol: TCP
     port: 8545
     name: geth-rpc
+  - protocol: TCP
+    port: 8000
+    name: bifrost-http
+  - protocol: TCP
+    port: 3000
+    name: web-app-http
