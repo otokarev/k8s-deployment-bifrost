@@ -18,7 +18,7 @@ spec:
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.09
           command: ["/cloud_sql_proxy", "--dir=/cloudsql",
-                    "-instances=${DATABASE_INSTANCE}",
+                    "-instances={{database_instance}}",
                     "-credential_file=/secrets/cloudsql/credentials.json"]
           volumeMounts:
             - name: cloudsql-instance-credentials
@@ -29,7 +29,7 @@ spec:
             - name: cloudsql
               mountPath: /cloudsql
         - name: stellar-core
-          image: "${STELLAR_CORE_IMAGE}"
+          image: "{{stellar_core_image}}"
           ports:
           - name: core-http
             containerPort: 11625
@@ -50,7 +50,7 @@ spec:
                   key: STELLAR_CORE_DATABASE_URL
 
         - name: stellar-horizon
-          image: "${STELLAR_HORIZON_IMAGE}"
+          image: "{{stellar_horizon_image}}"
           command:
             - "sh"
             - "-c"
@@ -89,9 +89,9 @@ spec:
            - name: BACKEND_URL
              value: http://127.0.0.1:8001
            - name: SSL_CERT_PATH
-             value: /certs/cert.crt
+             value: "/certs/{{stellar_horizon_ssl_crt_filename}}"
            - name: SSL_CERT_KEY_PATH
-             value: /certs/cert.key
+             value: "/certs/{{stellar_horizon_ssl_key_filename}}"
           command:
             - "/bin/bash"
             - "-c"
@@ -122,7 +122,7 @@ spec:
             mountPath: /data
 
         - name: stellar-bifrost
-          image: "${STELLAR_BIFROST_IMAGE}"
+          image: "{{stellar_bifrost_image}}"
           command: ["sh", "-c", "/entry.sh init; /entry.sh server"]
           env:
           - name: BIFROST_CFG
@@ -144,15 +144,15 @@ spec:
             containerPort: 8000
 
         - name: web-app
-          image: "${STELLAR_BIFROST_CLIENT_IMAGE}"
+          image: "{{stellar_bifrost_client_image}}"
           ports:
           - name: web-app-http
             containerPort: 3000
           env:
             - name: HORIZON_URL
-              value: "https://${LOAD_BALANCER_IP}:$(STELLAR_SERVICE_PORT_HORIZON_HTTPS)"
+              value: "https://{{load_balancer_ip}}:$(STELLAR_SERVICE_PORT_HORIZON_HTTPS)"
             - name: BIFROST_URL
-              value: "http://${LOAD_BALANCER_IP}:$(STELLAR_SERVICE_PORT_BIFROST_HTTP)"
+              value: "http://{{load_balancer_ip}}:$(STELLAR_SERVICE_PORT_BIFROST_HTTP)"
             - name: ISSUING_ACCOUNT
               value: GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T
             - name: NODE_ENV
@@ -172,11 +172,11 @@ spec:
           emptyDir:
         - name: geth-data
           gcePersistentDisk:
-            pdName: "${GETH_DATA_DISK}"
+            pdName: "{{geth_data_disk}}"
             fsType: ext4
         - name: core-data
           gcePersistentDisk:
-            pdName: "${STELLAR_CORE_DATA_DISK}"
+            pdName: "{{stellar_core_data_disk}}"
             fsType: ext4
         - name: stellar-horizon-proxy-data
           secret:

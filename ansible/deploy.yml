@@ -1,0 +1,104 @@
+- name: Deploy all
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+
+  tasks:
+  - name: Deploy static IP
+    shell: gcloud compute addresses list | grep stellar-bifrost-static-ip || gcloud compute addresses create stellar-bifrost-static-ip --region={{region}}
+  - name: Set loadbalancer_ip
+    shell: gcloud compute addresses list | grep stellar-bifrost-static-ip | gawk '{print $3}'
+    register: output
+  - set_fact:
+      load_balancer_ip: "{{output.stdout_lines[0]}}"
+  - name: Check if SQL instance installed
+    shell: gcloud sql instances list | grep {{sql_instance_id}} | wc -c
+    register: output
+  - set_fact:
+      sql_not_installed: "{{ true if output.stdout_lines[0] == '0' else false}}"
+  - name: Create SQL intstance
+    shell: >
+      gcloud sql instances create {{sql_instance_id}}
+      --no-backup
+      --database-version=POSTGRES_9_6
+      --storage-type=HDD
+      --region={{region}}
+      --cpu=1
+      --memory=3840MiB
+      --storage-auto-increase
+    when: sql_not_installed
+  - name: Create SQL User
+    shell: gcloud sql users create stellar '*' --password=1q2w3e --instance={{sql_instance_id}}
+    ignore_errors: yes
+    when: sql_not_installed
+  - name: Create core DB
+    shell: gcloud sql databases create core  --instance={{sql_instance_id}}
+    ignore_errors: yes
+    when: sql_not_installed
+  - name: Create horizon DB
+    shell: gcloud sql databases create horizon  --instance={{sql_instance_id}}
+    ignore_errors: yes
+    when: sql_not_installed
+  - name: Create bifrost DB
+    shell: gcloud sql databases create bifrost  --instance={{sql_instance_id}}
+    ignore_errors: yes
+    when: sql_not_installed
+  - name: Create cluster
+    shell: >
+      gcloud container clusters create {{cluster_name}}
+      --no-enable-cloud-logging
+      --enable-cloud-monitoring
+      --no-enable-cloud-endpoints
+      --num-nodes=2
+      --machine-type=n1-standard-2
+      --zone={{zone}}
+    ignore_errors: yes
+  - name: Load cluster credentials locally
+    shell: gcloud container clusters get-credentials {{cluster_name}} --zone {{zone}} --project {{project}}
+  - name: Create core-data disk
+    shell: gcloud compute disks create core-data --size 200GB --type pd-standard --zone {{zone}}
+    ignore_errors: yes
+  - name: Create geth-data disk
+    shell: gcloud compute disks create geth-data --size 200GB --type pd-standard --zone {{zone}}
+    ignore_errors: yes
+  - name: Deploy database client credentials
+    shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json=../stellar-sql-client-key.json
+    ignore_errors: yes
+  - name: Stellar Core configuration file
+    shell: kubectl create secret generic stellar-core-cfg --from-file=stellar-core.cfg=../volumes/core/configs/stellar-core.cfg
+    ignore_errors: yes
+  - name: Deploy database credentials secret
+    shell: >
+      kubectl create secret generic stellar-database-credentials
+      --from-literal=STELLAR_CORE_DATABASE_URL="{{stellar_core_database_url}}"
+      --from-literal=STELLAR_HORIZON_DATABASE_URL="{{stellar_horizon_database_url}}"
+    ignore_errors: yes
+  - name: Deploy bifrost credentials
+    shell: >
+      kubectl create secret generic stellar-bifrost-credentials
+      --from-literal=STELLAR_BIFROST_CFG='{{stellar_bifrost_cfg}}'
+      --from-literal=STELLAR_BIFROST_DATABASE_URL="{{stellar_bifrost_database_url}}"
+    ignore_errors: yes
+  - name: Deploy Horizon Proxy SSL credentials and nginx config
+    shell: >
+      kubectl create secret generic stellar-horizon-proxy-secret \
+      --from-file={{stellar_horizon_ssl_crt_path}} \
+      --from-file={{stellar_horizon_ssl_key_path}} \
+      --from-file=../https-proxy.template
+    ignore_errors: yes
+  - name: Generate Service YAML
+    template:
+      src: service.yaml.j2
+      dest: ./tmp/service.yaml
+  - name: Deploy service
+    shell: envsubst < ./tmp/service.yaml | kubectl create -f -
+    ignore_errors: yes
+  - name: Generate Deployment YAML
+    template:
+      src: deployment.yaml.j2
+      dest: ./tmp/deployment.yaml
+  - name: Deploy
+    shell: envsubst < ./tmp/deployment.yaml | kubectl create -f -
+    ignore_errors: yes

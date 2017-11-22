@@ -54,105 +54,44 @@ Run from project folder or `/vagrant` if the mentioned above vagrant box was ins
 docker-compose up
 ```
 ## Kubernates 
-### Configurations
-Copy `./config.template.sh` to `config.sh` and give values to all variables listed there
-
-Run:
-```text
-source ./config.sh
-```
-### Static IP
-Create one for the service if not exists yet
-```text
-gcloud compute addresses create stellar-bifrost-static-ip --region=$REGION
-```
-Update `config.sh` with new value.
-
-### PostgreSQL
-```text
-#Create intstance:
-gcloud sql instances create $SQL_INSTANCE_ID \
-    --no-backup \
-    --database-version=POSTGRES_9_6 \
-    --storage-type=HDD \
-    --region=$REGION \
-    --cpu=1 \
-    --memory=3840MiB \
-    --storage-auto-increase
-
-#Create user:
-gcloud sql users create stellar '*' --password=1q2w3e --instance=$SQL_INSTANCE_ID
-
-#Create databases:
-gcloud sql databases create core  --instance=$SQL_INSTANCE_ID
-gcloud sql databases create horizon  --instance=$SQL_INSTANCE_ID
-gcloud sql databases create bifrost  --instance=$SQL_INSTANCE_ID
-
-```
-Delete SQL instance:
-```text
-gcloud sql instances delete $SQL_INSTANCE_ID
-```
-
-### Cluster
-Create cluster:
-```text
-gcloud container clusters create $CLUSTER_NAME \
-    --no-enable-cloud-logging \
-    --enable-cloud-monitoring \
-    --no-enable-cloud-endpoints \
-    --num-nodes=2 \
-    --machine-type=n1-standard-2 \
-    --zone=$ZONE
-#Load cluster credentials:
-gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT
-```
-Delete cluster:
-```text
-gcloud container clusters delete $CLUSTER_NAME --zone=$ZONE
-```
-### Volumes
-```text
-gcloud compute disks create core-data --size 200GB --type pd-standard --zone $ZONE
-gcloud compute disks create geth-data --size 200GB --type pd-standard --zone $ZONE
-```
-
-### Secrets
+### Credentials
 Create a service account with `Cloud SQL Client` role. Store json-file with private key localy (e.g. in `stellar-sql-client-key.json`)
 
+Update SSL certificate and certificate key stored as:
+* `volumes/horizon/certs/cert.crt`
+* `volumes/horizon/certs/cert.key`
+
+or use existing ones (for test purpose only!)
+### Configurations
 ```text
-# Deploy database client credentials:
-kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json=./stellar-sql-client-key.json
-
-# Stellar Core configuration file:
-kubectl create secret generic stellar-core-cfg --from-file=stellar-core.cfg=./volumes/core/configs/stellar-core.cfg
-
-#Deploy database credentials secret:
-kubectl create secret generic stellar-database-credentials \
-    --from-literal=STELLAR_CORE_DATABASE_URL="${STELLAR_CORE_DATABASE_URL}" \
-    --from-literal=STELLAR_HORIZON_DATABASE_URL="${STELLAR_HORIZON_DATABASE_URL}" \
-
-#Deploy bifrost credentials
-kubectl create secret generic stellar-bifrost-credentials \
-    --from-literal=STELLAR_BIFROST_CFG="${STELLAR_BIFROST_CFG}" \
-    --from-literal=STELLAR_BIFROST_DATABASE_URL="${STELLAR_BIFROST_DATABASE_URL}"
-    
-#Deploy Horizon Proxy SSL credentials and nginx config
-kubectl create secret generic stellar-horizon-proxy-secret \
-    --from-file=./volumes/horizon/certs/cert.crt \
-    --from-file=./volumes/horizon/certs/cert.key \
-    --from-file=./https-proxy.template
+cd ansible
+cp host_vars/localhost.sample host_vars/localhost
 ```
-Delete secrets:
-```text
-kubectl delete secret --all
-```
+
+Minimal `host_vars/localhost` update to be able run playbook:
+
+* `stellar_core_image` must refer to image based on - https://github.com/otokarev/docker-stellar-core
+* `stellar_horizon_image` must refer to image based on - https://github.com/otokarev/docker-stellar-horizon
+* `stellar_bifrost_image` must refer to image based on - https://github.com/otokarev/docker-stellar-bifrost
+* `stellar_bifrost_client_image` must refer to image based on - https://github.com/otokarev/docker-stellar-bifrost-client
+
+* `project` your existing project ID
+
+* `sql_instance_id` instance ID for *new* SQL instance, make sure it will not collide with other instance's ID
+
+
 ### Deployment
-Deploy Stellar node application's pod:
+Deploy the application (including SQL instance, cluster, etc)
 ```
-envsubst < resources/service.yaml | kubectl create -f -
-envsubst < resources/deployment.yaml | kubectl create -f -
+cd ansible
+ansible-playbook -i localhost deploy.yml
 ```
+Remove the application, cluster, SQL instance
+```text
+cd ansible
+ansible-playbook -i localhost deploy.yml
+```
+
 ###Maintenance
 Pod cannot be launched if disk `core-data` is attached to any compute. To detach run in console:
 ```text

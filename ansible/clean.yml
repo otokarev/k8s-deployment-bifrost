@@ -1,0 +1,18 @@
+- name: Clean all
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+
+  tasks:
+  - name: Drop SQL instance
+    shell: gcloud sql instances delete {{sql_instance_id}}
+    ignore_errors: yes
+  - name: Drop cluster
+    shell: gcloud container clusters delete {{cluster_name}} --zone={{zone}} --quiet
+    ignore_errors: yes
+  - name: Drop static IP
+    shell: gcloud compute addresses delete stellar-bifrost-static-ip --region={{region}}
+    ignore_errors: yes
+

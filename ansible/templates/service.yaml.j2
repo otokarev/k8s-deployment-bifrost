@@ -4,7 +4,7 @@ metadata:
   name: stellar
 spec:
   type: LoadBalancer
-  loadBalancerIP: "${LOAD_BALANCER_IP}"
+  loadBalancerIP: "{{load_balancer_ip}}"
   selector:
     app: stellar
   ports:
