@@ -130,3 +130,8 @@ Get logs for `stellar-horizon`:
 ```text
 kubectl logs `kubectl get pods -o go-template="{{ (index .items 0).metadata.name }}"` horizon -f
 ```
+
+Delete all PVs with label `service` equal to `geth`
+```text
+kubectl get pv -l 'service=geth' -o go-template='{{range .items }}{{.metadata.name}} {{end}}' | xargs kubectl delete pv
+```

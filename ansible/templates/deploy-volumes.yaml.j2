@@ -1,0 +1,32 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: slow
+  labels:
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  zones: "{{zones | join(',')}}"
+---
+{% for zone in zones %}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "geth-{{zone}}"
+  labels:
+    zone: "{{zone}}"
+    service: "geth"
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slow
+  gcePersistentDisk:
+    fsType: ext4
+    pdName: "geth-{{zone}}"
+{% if not loop.last %}
+---
+{% endif %}
+{%endfor%}

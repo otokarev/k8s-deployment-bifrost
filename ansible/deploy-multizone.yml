@@ -1,0 +1,49 @@
+- name: Deploy all
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    additional_zones:
+
+  tasks:
+  - name: Create cluster
+    shell: >
+      gcloud container clusters create {{cluster_name}}
+      --no-enable-cloud-logging
+      --enable-cloud-monitoring
+      --no-enable-cloud-endpoints
+      --num-nodes=2
+      --machine-type=n1-standard-2
+      --zone={{zones[0]}} --additional-zones={{zones[1]}}
+    ignore_errors: yes
+
+  - name: Deploy static IP
+    shell: gcloud compute addresses list | grep geth-static-ip || gcloud compute addresses create geth-static-ip --region={{region}}
+  - name: Set load_balancer_ip
+    shell: gcloud compute addresses list | grep geth-static-ip | gawk '{print $3}'
+    register: output
+  - set_fact:
+      load_balancer_ip: "{{output.stdout_lines[0]}}"
+
+
+  - name: Create geth disks
+    shell: gcloud compute disks create geth-{{item}} --size 200GB --type pd-standard --zone {{item}}
+    ignore_errors: yes
+    with_items: "{{zones}}"
+
+  - name: Generate Volumes YAML
+    template:
+      src: deploy-volumes.yaml.j2
+      dest: ./tmp/deploy-volumes.yaml
+  - name: Deploy volumes
+    shell: envsubst < ./tmp/deploy-volumes.yaml | kubectl create -f -
+    ignore_errors: yes
+
+  - name: Generate Geth YAML
+    template:
+      src: deploy-geth.yaml.j2
+      dest: ./tmp/deploy-geth.yaml
+  - name: Deploy geth
+    shell: envsubst < ./tmp/deploy-geth.yaml | kubectl create -f -
+    ignore_errors: yes

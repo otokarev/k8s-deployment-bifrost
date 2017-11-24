@@ -8,7 +8,7 @@
   tasks:
   - name: Deploy static IP
     shell: gcloud compute addresses list | grep stellar-bifrost-static-ip || gcloud compute addresses create stellar-bifrost-static-ip --region={{region}}
-  - name: Set loadbalancer_ip
+  - name: Set load_balancer_ip
     shell: gcloud compute addresses list | grep stellar-bifrost-static-ip | gawk '{print $3}'
     register: output
   - set_fact:

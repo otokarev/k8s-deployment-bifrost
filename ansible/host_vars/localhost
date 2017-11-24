@@ -1,0 +1,61 @@
+---
+zones: [europe-west1-d, europe-west1-b]
+region: europe-west1
+project: lucid-course-142515
+
+load_balancer_ip: ~
+sql_instance_id: bifrost-10
+cluster_name: bifrost-cluster
+
+database_instance: "{{project}}:{{region}}:{{sql_instance_id}}=tcp:5432"
+
+##
+# GETH
+##
+geth_data_disk: geth-data
+
+##
+# STELLAR CORE
+##
+stellar_core_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-core:v0.1.7"
+stellar_core_database_url: "postgres://stellar:1q2w3e@127.0.0.1/core?sslmode=disable"
+stellar_core_data_disk: core-data
+
+##
+# STELLAR HORIZON
+##
+stellar_horizon_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-horizon:v0.1.1"
+stellar_horizon_database_url: "postgres://stellar:1q2w3e@127.0.0.1/horizon?sslmode=disable"
+stellar_horizon_ssl_crt_path: ../volumes/horizon/certs/cert.crt
+stellar_horizon_ssl_key_path: ../volumes/horizon/certs/cert.key
+stellar_horizon_ssl_crt_filename: "{{stellar_horizon_ssl_crt_path | basename}}"
+stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
+
+##
+# STELLAR BIFROST
+##
+stellar_bifrost_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-bifrost:v0.1.0"
+stellar_bifrost_database_url: "postgres://stellar:1q2w3e@127.0.0.1/bifrost?sslmode=disable"
+stellar_bifrost_cfg: >
+    {
+        "ethereum": {
+            "master_public_key": "xpub6C79eBsW2XQbzfXFsRv51Lac6Ckx5nyqf9cUmFr1fuAEHGXmpq8oPNMqCpH1jTdwP3s5SD644R8KK4cVytk9Jxcxcb7JsfNxcGNRbG5q4pq",
+            "network_id": "3",
+            "minimum_value_eth": "0.00001"
+        },
+        "stellar": {
+            "issuer_public_key": "GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T",
+            "signer_secret_key": "SD4DFZ433RUGNCMCG4JGWK47R5KOHQOS4T5LXGLGBLY7ZLBUZQTTONVQ",
+            "token_asset_code": "TOKE",
+            "needs_authorize": "true",
+            "network_passphrase": "Test SDF Network ; September 2015"
+        },
+        "database": {
+            "type": "postgres"
+        }
+    }
+
+##
+# STELLAR BIFROST CLIENT (sample)
+##
+stellar_bifrost_client_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-bifrost-client:v0.1.0"
