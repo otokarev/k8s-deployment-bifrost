@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bifrost-frontend
+  labels:
+    app: bifrost
+    tier: frontend
+spec:
+  type: LoadBalancer
+  loadBalancerIP: "{{bifrost_lb_ip}}"
+  selector:
+    app: bifrost
+  ports:
+  - protocol: TCP
+    port: 8000
+    name: http
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+    name: client-http
+---
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: bifrost
+spec:
+  replicas: 1
+  serviceName: bifrost
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: bifrost
+    spec:
+      containers:
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.09
+          command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                    "-instances={{stellar_bifrost_database_instance}}",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+            - name: cloudsql
+              mountPath: /cloudsql
+
+        - name: bifrost
+          image: "{{stellar_bifrost_image}}"
+          command: ["sh", "-c", "/entry.sh init; /entry.sh server"]
+          env:
+          - name: BIFROST_CFG
+            valueFrom:
+              secretKeyRef:
+                name: stellar-bifrost-credentials
+                key: STELLAR_BIFROST_CFG
+          - name: BIFROST_ETHEREUM_RPC_SERVER
+            value: "geth-backend:8545"
+          - name: BIFROST_STELLAR_HORIZON
+            value: "http://stellar-backend:8000"
+          - name: BIFROST_DB_DSN
+            valueFrom:
+              secretKeyRef:
+                name: stellar-bifrost-credentials
+                key: STELLAR_BIFROST_DATABASE_URL
+          ports:
+          - name: http
+            containerPort: 8000
+
+        - name: client
+          image: "{{stellar_bifrost_client_image}}"
+          ports:
+          - name: client-http
+            containerPort: 3000
+          env:
+            - name: HORIZON_URL
+              value: "https://{{stellar_lb_ip}}:$(STELLAR_FRONTEND_SERVICE_PORT_HORIZON_HTTPS)"
+            - name: BIFROST_URL
+              value: "http://{{bifrost_lb_ip}}:$(BIFROST_FRONTEND_SERVICE_PORT_HTTP)"
+            - name: ISSUING_ACCOUNT
+              value: GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T
+            - name: NODE_ENV
+              value: development
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:

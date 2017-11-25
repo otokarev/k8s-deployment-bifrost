@@ -1,13 +1,9 @@
 ---
+cluster_name: bifrost-cluster
 zones: [europe-west1-d, europe-west1-b]
 region: europe-west1
 project: lucid-course-142515
-
-load_balancer_ip: ~
-sql_instance_id: bifrost-10
-cluster_name: bifrost-cluster
-
-database_instance: "{{project}}:{{region}}:{{sql_instance_id}}=tcp:5432"
+sql_instance_id: bifrost-11
 
 ##
 # GETH
@@ -15,25 +11,28 @@ database_instance: "{{project}}:{{region}}:{{sql_instance_id}}=tcp:5432"
 geth_data_disk: geth-data
 
 ##
+# STELLAR
+##
+stellar_lb_ip: ~
+#
 # STELLAR CORE
-##
+#
 stellar_core_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-core:v0.1.7"
-stellar_core_database_url: "postgres://stellar:1q2w3e@127.0.0.1/core?sslmode=disable"
 stellar_core_data_disk: core-data
-
-##
+#
 # STELLAR HORIZON
-##
+#
 stellar_horizon_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-horizon:v0.1.1"
-stellar_horizon_database_url: "postgres://stellar:1q2w3e@127.0.0.1/horizon?sslmode=disable"
 stellar_horizon_ssl_crt_path: ../volumes/horizon/certs/cert.crt
 stellar_horizon_ssl_key_path: ../volumes/horizon/certs/cert.key
 stellar_horizon_ssl_crt_filename: "{{stellar_horizon_ssl_crt_path | basename}}"
 stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
 
 ##
-# STELLAR BIFROST
+# BIFROST
 ##
+stellar_bifrost_database_instance: "{{project}}:{{region}}:{{sql_instance_id}}=tcp:5432"
+stellar_bifrost_lb_ip: ~
 stellar_bifrost_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-bifrost:v0.1.0"
 stellar_bifrost_database_url: "postgres://stellar:1q2w3e@127.0.0.1/bifrost?sslmode=disable"
 stellar_bifrost_cfg: >
