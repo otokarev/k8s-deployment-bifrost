@@ -4,15 +4,12 @@
   gather_facts: no
 
   vars:
+    additional_zones:
 
   tasks:
-  - name: Deploy static IP
-    shell: gcloud compute addresses list | grep stellar-bifrost-static-ip || gcloud compute addresses create stellar-bifrost-static-ip --region={{region}}
-  - name: Set load_balancer_ip
-    shell: gcloud compute addresses list | grep stellar-bifrost-static-ip | gawk '{print $3}'
-    register: output
-  - set_fact:
-      load_balancer_ip: "{{output.stdout_lines[0]}}"
+  ###
+  # SQL INSTANCE
+  ##
   - name: Check if SQL instance installed
     shell: gcloud sql instances list | grep {{sql_instance_id}} | wc -c
     register: output
@@ -33,18 +30,13 @@
     shell: gcloud sql users create stellar '*' --password=1q2w3e --instance={{sql_instance_id}}
     ignore_errors: yes
     when: sql_not_installed
-  - name: Create core DB
-    shell: gcloud sql databases create core  --instance={{sql_instance_id}}
-    ignore_errors: yes
-    when: sql_not_installed
-  - name: Create horizon DB
-    shell: gcloud sql databases create horizon  --instance={{sql_instance_id}}
-    ignore_errors: yes
-    when: sql_not_installed
   - name: Create bifrost DB
     shell: gcloud sql databases create bifrost  --instance={{sql_instance_id}}
     ignore_errors: yes
     when: sql_not_installed
+  ##
+  # K8S CLUSTER
+  ##
   - name: Create cluster
     shell: >
       gcloud container clusters create {{cluster_name}}
@@ -53,52 +45,100 @@
       --no-enable-cloud-endpoints
       --num-nodes=2
       --machine-type=n1-standard-2
-      --zone={{zone}}
+      --zone={{zones[0]}} --additional-zones={{zones[1]}}
     ignore_errors: yes
-  - name: Load cluster credentials locally
-    shell: gcloud container clusters get-credentials {{cluster_name}} --zone {{zone}} --project {{project}}
-  - name: Create core-data disk
-    shell: gcloud compute disks create core-data --size 200GB --type pd-standard --zone {{zone}}
+
+  ##
+  # BALANCER IPS
+  ##
+  - name: Deploy Stellar lb static IP
+    shell: gcloud compute addresses create stellar-lb-ip --region={{region}}
     ignore_errors: yes
-  - name: Create geth-data disk
-    shell: gcloud compute disks create geth-data --size 200GB --type pd-standard --zone {{zone}}
+  - name: Set stellar_lb_ip
+    shell: gcloud compute addresses list | grep stellar-lb-ip | gawk '{print $3}'
+    register: output
+  - set_fact:
+      stellar_lb_ip: "{{output.stdout_lines[0]}}"
+
+  - name: Deploy Bifrost lb static IP
+    shell: gcloud compute addresses create bifrost-lb-ip --region={{region}}
     ignore_errors: yes
-  - name: Deploy database client credentials
-    shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json=../stellar-sql-client-key.json
+  - name: Set stellar_lb_ip
+    shell: gcloud compute addresses list | grep bifrost-lb-ip | gawk '{print $3}'
+    register: output
+  - set_fact:
+      bifrost_lb_ip: "{{output.stdout_lines[0]}}"
+
+  ##
+  # DISKS & PERSISTENT VOLUMES(CLASSES)
+  ##
+  - name: Create disks
+    shell: |
+      gcloud compute disks create geth-{{item}} --size 20GB --type pd-standard --zone {{item}}
+      gcloud compute disks create core-{{item}} --size 20GB --type pd-standard --zone {{item}}
+      gcloud compute disks create horizon-{{item}} --size 20GB --type pd-standard --zone {{item}}
     ignore_errors: yes
-  - name: Stellar Core configuration file
-    shell: kubectl create secret generic stellar-core-cfg --from-file=stellar-core.cfg=../volumes/core/configs/stellar-core.cfg
+    with_items: "{{zones}}"
+
+  - name: Generate Volumes YAML
+    template:
+      src: deploy-volumes.yaml.j2
+      dest: ./tmp/deploy-volumes.yaml
+  - name: Deploy volumes
+    shell: kubectl create -f ./tmp/deploy-volumes.yaml
     ignore_errors: yes
-  - name: Deploy database credentials secret
-    shell: >
-      kubectl create secret generic stellar-database-credentials
-      --from-literal=STELLAR_CORE_DATABASE_URL="{{stellar_core_database_url}}"
-      --from-literal=STELLAR_HORIZON_DATABASE_URL="{{stellar_horizon_database_url}}"
+
+  ##
+  # Deploy GETH
+  ##
+  - name: Generate Geth YAML
+    template:
+      src: deploy-geth.yaml.j2
+      dest: ./tmp/deploy-geth.yaml
+  - name: Deploy geth
+    shell: kubectl create -f ./tmp/deploy-geth.yaml
     ignore_errors: yes
-  - name: Deploy bifrost credentials
-    shell: >
-      kubectl create secret generic stellar-bifrost-credentials
-      --from-literal=STELLAR_BIFROST_CFG='{{stellar_bifrost_cfg}}'
-      --from-literal=STELLAR_BIFROST_DATABASE_URL="{{stellar_bifrost_database_url}}"
+
+  ##
+  # Deploy STELLAR
+  ##
+  - name: Deploy secret with Stellar Core configuration file
+    shell: kubectl create secret generic stellar-core-cfg --from-file=stellar-core.cfg={{stellar_core_cfg_path}}
     ignore_errors: yes
-  - name: Deploy Horizon Proxy SSL credentials and nginx config
+
+  - name: Deploy secret with Horizon Proxy SSL credentials and nginx config
     shell: >
       kubectl create secret generic stellar-horizon-proxy-secret \
       --from-file={{stellar_horizon_ssl_crt_path}} \
       --from-file={{stellar_horizon_ssl_key_path}} \
-      --from-file=../https-proxy.template
+      --from-file={{stellar_horizon_proxy_cfg_template_path}}
     ignore_errors: yes
-  - name: Generate Service YAML
+
+  - name: Generate Stellar YAML
     template:
-      src: service.yaml.j2
-      dest: ./tmp/service.yaml
-  - name: Deploy service
-    shell: envsubst < ./tmp/service.yaml | kubectl create -f -
+      src: deploy-stellar.yaml.j2
+      dest: ./tmp/deploy-stellar.yaml
+  - name: Deploy stellar
+    shell: kubectl create -f ./tmp/deploy-stellar.yaml
     ignore_errors: yes
-  - name: Generate Deployment YAML
+
+  ##
+  # Deploy BIFROST
+  ##
+  - name: Deploy secret with database client credentials
+    shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json={{sql_client_key_path}}
+    ignore_errors: yes
+  - name: Deploy secret with Bifrost credentials
+    shell: >
+      kubectl create secret generic stellar-bifrost-credentials
+      --from-literal=STELLAR_BIFROST_CFG='{{stellar_bifrost_cfg|to_json}}'
+      --from-literal=STELLAR_BIFROST_DATABASE_URL="{{stellar_bifrost_database_url}}"
+    ignore_errors: yes
+
+  - name: Generate Bifrost YAML
     template:
-      src: deployment.yaml.j2
-      dest: ./tmp/deployment.yaml
-  - name: Deploy
-    shell: envsubst < ./tmp/deployment.yaml | kubectl create -f -
+      src: deploy-bifrost.yaml.j2
+      dest: ./tmp/deploy-bifrost.yaml
+  - name: Deploy Bifrost
+    shell: kubectl create -f ./tmp/deploy-bifrost.yaml
     ignore_errors: yes

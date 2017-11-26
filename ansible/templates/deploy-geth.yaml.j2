@@ -29,9 +29,19 @@ spec:
       labels:
         app: geth
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - geth
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
         - name: geth
-          image: ethereum/client-go
+          image: "{{geth_image}}"
           command:
             - geth
             - --rpc

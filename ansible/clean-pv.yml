@@ -1,0 +1,14 @@
+- name: Clean all
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+
+  tasks:
+  - name: Drop PVs
+    shell: kubectl get pv -o go-template='{%raw%}{{range .items }}{{.metadata.name}} {{end}}{%endraw%}' | xargs kubectl delete pv
+    ignore_errors: yes
+  - name: Drop PVCs
+    shell: kubectl get pvc -o go-template='{%raw%}{{range .items }}{{.metadata.name}} {{end}}{%endraw%}' | xargs kubectl delete pvc
+    ignore_errors: yes

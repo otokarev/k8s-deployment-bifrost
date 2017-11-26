@@ -34,9 +34,19 @@ spec:
       labels:
         app: bifrost
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - bifrost
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
         - name: cloudsql-proxy
-          image: gcr.io/cloudsql-docker/gce-proxy:1.09
+          image: "{{sql_cloudsql_proxy_image}}"
           command: ["/cloud_sql_proxy", "--dir=/cloudsql",
                     "-instances={{stellar_bifrost_database_instance}}",
                     "-credential_file=/secrets/cloudsql/credentials.json"]
@@ -82,7 +92,7 @@ spec:
             - name: BIFROST_URL
               value: "http://{{bifrost_lb_ip}}:$(BIFROST_FRONTEND_SERVICE_PORT_HTTP)"
             - name: ISSUING_ACCOUNT
-              value: GD5H2WSHTWVTZI5BR3V5XTRBCFDMEOKFMXR4Y4PU337K7WS55UAADI5T
+              value: "{{stellar_bifrost_cfg.stellar.issuer_public_key}}"
             - name: NODE_ENV
               value: development
       volumes:

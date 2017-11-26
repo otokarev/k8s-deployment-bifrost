@@ -45,6 +45,16 @@ spec:
       labels:
         app: stellar
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - stellar
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
       containers:
         - name: core
           image: "{{stellar_core_image}}"
