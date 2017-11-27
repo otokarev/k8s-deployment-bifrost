@@ -12,38 +12,20 @@ parameters:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "core-{{zone}}"
+  name: "stellar-{{zone}}"
   labels:
     zone: "{{zone}}"
-    service: "core"
+    service: "stellar"
 spec:
   capacity:
-    storage: 20Gi
+    storage: 40Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: slow
   gcePersistentDisk:
     fsType: ext4
-    pdName: "core-{{zone}}"
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "horizon-{{zone}}"
-  labels:
-    zone: "{{zone}}"
-    service: "horizon"
-spec:
-  capacity:
-    storage: 20Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: slow
-  gcePersistentDisk:
-    fsType: ext4
-    pdName: "horizon-{{zone}}"
+    pdName: "stellar-{{zone}}"
 ---
 apiVersion: v1
 kind: PersistentVolume

@@ -75,8 +75,7 @@
   - name: Create disks
     shell: |
       gcloud compute disks create geth-{{item}} --size 20GB --type pd-standard --zone {{item}}
-      gcloud compute disks create core-{{item}} --size 20GB --type pd-standard --zone {{item}}
-      gcloud compute disks create horizon-{{item}} --size 20GB --type pd-standard --zone {{item}}
+      gcloud compute disks create stellar-{{item}} --size 40GB --type pd-standard --zone {{item}}
     ignore_errors: yes
     with_items: "{{zones}}"
 

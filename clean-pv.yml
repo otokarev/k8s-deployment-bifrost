@@ -12,3 +12,8 @@
   - name: Drop PVCs
     shell: kubectl get pvc -o go-template='{%raw%}{{range .items }}{{.metadata.name}} {{end}}{%endraw%}' | xargs kubectl delete pvc
     ignore_errors: yes
+  - name: Drop the App
+    shell: >
+      kubectl delete sts stellar geth bifrost
+      && kubectl delete services -l 'app in (stellar,bifrost,geth)'
+    ignore_errors: yes

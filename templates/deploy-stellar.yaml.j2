@@ -66,9 +66,9 @@ spec:
           volumeMounts:
           - name: stellar-core-cfg
             mountPath: /configs
-          - name: core-data
+          - name: stellar-data
             mountPath: /data
-            subPath: core
+            subPath: core-data
           env:
             - name: NONEWHIST
               value: "1"
@@ -88,8 +88,8 @@ spec:
             - name: PGPORT
               value: "5432"
           volumeMounts:
-          - name: core-data
-            subPath: pgdata
+          - name: stellar-data
+            subPath: core-pgdata
             mountPath: /var/lib/postgresql/data
 
         - name: horizon
@@ -122,8 +122,8 @@ spec:
             - name: PGPORT
               value: "6432"
           volumeMounts:
-          - name: horizon-data
-            subPath: pgdata
+          - name: stellar-data
+            subPath: horizon-pgdata
             mountPath: /var/lib/postgresql/data
 
         - name: horizon-proxy
@@ -161,26 +161,14 @@ spec:
 
   volumeClaimTemplates:
   - metadata:
-      name: core-data
+      name: stellar-data
     spec:
       accessModes:
         - ReadWriteOnce
       resources:
         requests:
-          storage: 20Gi
+          storage: 40Gi
       storageClassName: slow
       selector:
         matchLabels:
-          service: "core"
-  - metadata:
-      name: horizon-data
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: 20Gi
-      storageClassName: slow
-      selector:
-        matchLabels:
-          service: "horizon"
+          service: "stellar"

@@ -21,16 +21,16 @@ stellar_lb_ip: ~
 ##
 # STELLAR CORE
 ##
-stellar_core_cfg_path: ../volumes/core/configs/stellar-core.cfg
+stellar_core_cfg_path: ../files/stellar-core.cfg
 stellar_core_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-core:v0.1.7"
 stellar_core_data_disk: core-data
 ##
 # STELLAR HORIZON
 ##
-stellar_horizon_proxy_cfg_template_path: ../https-proxy.template
+stellar_horizon_proxy_cfg_template_path: ./files/https-proxy.template
 stellar_horizon_image: "gcr.io/lucid-course-142515/github-otokarev-docker-stellar-horizon:v0.1.1"
-stellar_horizon_ssl_crt_path: ../volumes/horizon/certs/cert.crt
-stellar_horizon_ssl_key_path: ../volumes/horizon/certs/cert.key
+stellar_horizon_ssl_crt_path: ./files/certs/cert.crt
+stellar_horizon_ssl_key_path: ./files/certs/cert.key
 stellar_horizon_ssl_crt_filename: "{{stellar_horizon_ssl_crt_path | basename}}"
 stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
 
