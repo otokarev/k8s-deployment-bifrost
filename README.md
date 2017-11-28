@@ -4,14 +4,15 @@ Kind of deployment automation for Bifrost
 ## Component Diagram
 ![Component Diagram](docs/images/k8s-bifrost.png)
 
-## Credentials
-Create a service account with `Cloud SQL Client` role. Store json-file with private key localy (e.g. in `stellar-sql-client-key.json`)
-
-Get somewhere SSL certificate and certificate key and store them locally.
-
-Or use existing ones (for test purpose only!):
-* `files/certs/cert.crt`
-* `files/certs/cert.key`
+## Prerequisites
+* `Ansible` >= 2.4
+* `google-cloud-sdk` installed, `gcloud` configured to have access the target project
+* Create a service account with `Cloud SQL Client` role. Store json-file with private key localy (e.g. in `stellar-sql-client-key.json`)
+* Get somewhere SSL certificate and certificate key and store them locally.
+  
+  Or use existing ones (for test purpose only!):
+  * `files/certs/cert.crt`
+  * `files/certs/cert.key`
 
 ## Configurations
 Copy `group_vars/dev.sample` to `group_vars/dev`
