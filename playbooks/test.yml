@@ -1,0 +1,9 @@
+- name: Deploy all
+  hosts: localhost
+  connection: local
+
+  tasks:
+  - debug: msg="{{geth_image}}"
+  - debug: msg="{{region}}"
+
+
