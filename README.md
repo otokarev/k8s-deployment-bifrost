@@ -29,7 +29,8 @@ Deploy the application (including SQL instance, cluster, etc)
 ```
 ansible-playbook -i dev playbooks/deploy.yml 
 ```
-It safe to run it several times. Failed Ansible tasks (e.g. be reason they were successfully processed before) will be skipped.
+
+It safe to run it several times. The tasks processed before will not block playbook processing.
 
 
 
