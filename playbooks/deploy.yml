@@ -44,7 +44,7 @@
       --enable-cloud-monitoring
       --no-enable-cloud-endpoints
       --num-nodes=2
-      --machine-type=n1-standard-2
+      --machine-type={{machine_type}}
       --zone={{zones[0]}} --additional-zones={{zones[1]}}
     ignore_errors: yes
   - name: Get k8s credentials from gcloud
@@ -86,8 +86,8 @@
   ##
   - name: Create disks
     shell: |
-      gcloud compute disks create {{namespace}}-geth-{{item}} --size 20GB --type pd-standard --zone {{item}}
-      gcloud compute disks create {{namespace}}-stellar-{{item}} --size 40GB --type pd-standard --zone {{item}}
+      gcloud compute disks create {{namespace}}-geth-{{item}} --size {{geth_storage_capacity_gb}}GB --type pd-standard --zone {{item}}
+      gcloud compute disks create {{namespace}}-stellar-{{item}} --size {{stellar_storage_capacity_gb}}GB --type pd-standard --zone {{item}}
     ignore_errors: yes
     with_items: "{{zones}}"
 

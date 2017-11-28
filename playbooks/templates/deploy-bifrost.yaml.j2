@@ -68,6 +68,8 @@ spec:
               secretKeyRef:
                 name: stellar-bifrost-credentials
                 key: STELLAR_BIFROST_CFG
+          - name: ETHEREUM_LAST_BLOCK
+            value: "{{stellar_bifrost_ethereum_start_block}}"
           - name: BIFROST_ETHEREUM_RPC_SERVER
             value: "geth-backend:8545"
           - name: BIFROST_STELLAR_HORIZON
@@ -94,7 +96,7 @@ spec:
             - name: ISSUING_ACCOUNT
               value: "{{stellar_bifrost_cfg.stellar.issuer_public_key}}"
             - name: NODE_ENV
-              value: "{% if namespace != 'prod' %}development{% else %}production{% endif %}"
+              value: "{{stellar_bifrost_client_env}}"
       volumes:
         - name: cloudsql-instance-credentials
           secret:

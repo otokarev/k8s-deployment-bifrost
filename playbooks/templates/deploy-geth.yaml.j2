@@ -68,5 +68,5 @@ spec:
         - ReadWriteOnce
       resources:
         requests:
-          storage: "{{geth_storage_capacity}}"
+          storage: "{{geth_storage_capacity_gb}}Gi"
       storageClassName: "{{namespace}}-geth"

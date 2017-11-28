@@ -3,6 +3,7 @@ apiVersion: storage.k8s.io/v1
 metadata:
   name: "{{namespace}}-geth"
   labels:
+    namespace: "{{namespace}}"
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: "{{storage_class_parameters_type}}"
@@ -13,6 +14,7 @@ apiVersion: storage.k8s.io/v1
 metadata:
   name: "{{namespace}}-stellar"
   labels:
+    namespace: "{{namespace}}"
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: "{{storage_class_parameters_type}}"
@@ -26,9 +28,10 @@ metadata:
   labels:
     zone: "{{zone}}"
     service: "stellar"
+    namespace: "{{namespace}}"
 spec:
   capacity:
-    storage: "{{stellar_storage_capacity}}"
+    storage: "{{stellar_storage_capacity_gb}}Gi"
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -44,13 +47,14 @@ metadata:
   labels:
     zone: "{{zone}}"
     service: "geth"
+    namespace: "{{namespace}}"
 spec:
   capacity:
-    storage: "{{geth_storage_capacity}}"
+    storage: "{{geth_storage_capacity_gb}}Gi"
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: "{{namespace}}-stellar"
+  storageClassName: "{{namespace}}-geth"
   gcePersistentDisk:
     fsType: ext4
     pdName: "{{namespace}}-geth-{{zone}}"

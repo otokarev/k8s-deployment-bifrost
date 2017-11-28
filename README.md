@@ -1,6 +1,9 @@
 Kind of deployment automation for Bifrost
 
 # Kubernates 
+## Component Diagram
+![Component Diagram](docs/images/k8s-bifrost.png)
+
 ## Credentials
 Create a service account with `Cloud SQL Client` role. Store json-file with private key localy (e.g. in `stellar-sql-client-key.json`)
 
@@ -10,75 +13,32 @@ Update SSL certificate and certificate key stored as:
 
 or use existing ones (for test purpose only!)
 ## Configurations
-```text
-cd ansible
-cp host_vars/localhost.sample host_vars/localhost
-```
+Copy `group_vars/dev.sample` to `group_vars/dev`
 
-Minimal `host_vars/localhost` update to be able run playbook:
-
-* `stellar_core_image` must refer to image based on - https://github.com/otokarev/docker-stellar-core
-* `stellar_horizon_image` must refer to image based on - https://github.com/otokarev/docker-stellar-horizon
-* `stellar_bifrost_image` must refer to image based on - https://github.com/otokarev/docker-stellar-bifrost
-* `stellar_bifrost_client_image` must refer to image based on - https://github.com/otokarev/docker-stellar-bifrost-client
-
-* `project` your existing project ID
-
-* `sql_instance_id` instance ID for *new* SQL instance, make sure it will not collide with other instance's ID
-
+Change it. Set appropriate settings.
 
 ## Deployment
 Deploy the application (including SQL instance, cluster, etc)
 ```
-cd ansible
-ansible-playbook -i localhost deploy.yml
+ansible-playbook -i dev playbooks/deploy.yml 
 ```
-Remove the application, cluster, SQL instance
+It safe to run it several times. Failed Ansible tasks (e.g. be reason they were successfully processed before) will be skipped.
+
+
+
+Remove the application, cluster, SQL instance, etc (DO NOT USE IT ON PRODUCTION)
 ```text
-cd ansible
-ansible-playbook -i localhost deploy.yml
+ansible-playbook -i dev playbooks/drop-all.yml 
 ```
 
 ##Maintenance
-Pod cannot be launched if disk `core-data` is attached to any compute. To detach run in console:
+
+Run in console
 ```text
-for i in `gcloud compute instances list | gawk 'NR>1 {print $1}'`; do gcloud compute instances detach-disk $i --zone $ZONE --disk=core-data; done
+kubectl proxy
 ```
 
-To modify the deployment:
-```
-kubectl edit deployment/stellar --save-config
-```
-To see logs (stellar core):
-```
-kubectl log deployment/stellar -c core -f
-```
-To see logs (stellar horizon):
-```
-kubectl log deployment/stellar -c horizon -f
-```
-Delete the deployment:
-```text
-kubectl delete deployment stellar
-```
-Delete the service:
-```text
-kubectl delete service stellar
-```
-Launch bash in Stellar core container:
-```text
-kubectl exec -it `kubectl get pods -o go-template="{{ (index .items 0).metadata.name }}"` -c core sh
-```
-Describe first pod from the list:
-```text
-kubectl describe  po/`kubectl get pods -o go-template="{{ (index .items 0).metadata.name }}"`
-```
-Get logs for `stellar-horizon`:
-```text
-kubectl logs `kubectl get pods -o go-template="{{ (index .items 0).metadata.name }}"` horizon -f
-```
+After that a web console available at `http://127.0.0.1:8001/ui` (choose right namespace to see something)
 
-Delete all PVs with label `service` equal to `geth`
-```text
-kubectl get pv -l 'service=geth' -o go-template='{{range .items }}{{.metadata.name}} {{end}}' | xargs kubectl delete pv
-```
+TODO
+

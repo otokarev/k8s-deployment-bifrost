@@ -19,13 +19,12 @@ storage_class_parameters_type: pd-standard
 ##
 # GETH
 ##
-geth_storage_capacity: 20Gi
+geth_storage_capacity_gb: 20
 
 ##
 # STELLAR
 ##
-stellar_lb_ip: ~
-stellar_storage_capacity: 40Gi
+stellar_storage_capacity_gb: 40
 #
 # STELLAR CORE
 #
@@ -39,8 +38,8 @@ stellar_horizon_ssl_key_path: /somewhere/certs/cert.key
 ##
 # BIFROST
 ##
-stellar_bifrost_lb_ip: ~
-stellar_bifrost_database_url: "postgres://...?sslmode=disable"
+stellar_bifrost_ethereum_start_block: 2150000
+stellar_bifrost_database_url: "postgres://...@127.0.0.1/...?sslmode=disable"
 stellar_bifrost_cfg:
   ethereum:
     master_public_key: "xpub..."
@@ -58,3 +57,4 @@ stellar_bifrost_cfg:
 ##
 # STELLAR BIFROST CLIENT (sample)
 ##
+stellar_bifrost_client_env: "development"
