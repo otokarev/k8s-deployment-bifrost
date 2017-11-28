@@ -19,6 +19,11 @@ Copy `group_vars/dev.sample` to `group_vars/dev`
 
 Change it. Set appropriate settings.
 
+**CAUTION:** Database in `stellar-core.cfg` must be configures as
+```text
+DATABASE="__DATABASE_URL__"`
+```
+
 ## Deployment
 Deploy the application (including SQL instance, cluster, etc)
 ```
