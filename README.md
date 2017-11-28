@@ -31,7 +31,7 @@ Remove the application, cluster, SQL instance, etc (DO NOT USE IT ON PRODUCTION)
 ansible-playbook -i dev playbooks/drop-all.yml 
 ```
 
-##Maintenance
+## Maintenance
 
 Run in console
 ```text
