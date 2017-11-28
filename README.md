@@ -7,11 +7,12 @@ Kind of deployment automation for Bifrost
 ## Credentials
 Create a service account with `Cloud SQL Client` role. Store json-file with private key localy (e.g. in `stellar-sql-client-key.json`)
 
-Update SSL certificate and certificate key stored as:
+Get somewhere SSL certificate and certificate key and store them locally.
+
+Or use existing ones (for test purpose only!):
 * `files/certs/cert.crt`
 * `files/certs/cert.key`
 
-or use existing ones (for test purpose only!)
 ## Configurations
 Copy `group_vars/dev.sample` to `group_vars/dev`
 
