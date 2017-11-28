@@ -1,49 +1,59 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: slow
+  name: "{{namespace}}-geth"
   labels:
 provisioner: kubernetes.io/gce-pd
 parameters:
-  type: pd-standard
+  type: "{{storage_class_parameters_type}}"
+  zones: "{{zones | join(',')}}"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: "{{namespace}}-stellar"
+  labels:
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: "{{storage_class_parameters_type}}"
   zones: "{{zones | join(',')}}"
 ---
 {% for zone in zones %}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "stellar-{{zone}}"
+  name: "{{namespace}}-stellar-{{zone}}"
   labels:
     zone: "{{zone}}"
     service: "stellar"
 spec:
   capacity:
-    storage: 40Gi
+    storage: "{{stellar_storage_capacity}}"
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: slow
+  storageClassName: "{{namespace}}-stellar"
   gcePersistentDisk:
     fsType: ext4
-    pdName: "stellar-{{zone}}"
+    pdName: "{{namespace}}-stellar-{{zone}}"
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "geth-{{zone}}"
+  name: "{{namespace}}-geth-{{zone}}"
   labels:
     zone: "{{zone}}"
     service: "geth"
 spec:
   capacity:
-    storage: 20Gi
+    storage: "{{geth_storage_capacity}}"
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: slow
+  storageClassName: "{{namespace}}-stellar"
   gcePersistentDisk:
     fsType: ext4
-    pdName: "geth-{{zone}}"
+    pdName: "{{namespace}}-geth-{{zone}}"
 {% if not loop.last %}
 ---
 {% endif %}

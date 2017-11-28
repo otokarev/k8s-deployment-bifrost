@@ -16,16 +16,15 @@
     shell: gcloud compute addresses delete {{item}} --region={{region}}
     ignore_errors: yes
     with_items:
-    - stellar-bifrost-lb-ip
-    - stellar-lb-ip
+    - "{{namespace}}-stellar-bifrost-lb-ip"
+    - "{{namespace}}-stellar-lb-ip"
   - name: Drop disks
     shell: |
-      gcloud compute disks delete geth-{{item}} --zone {{item}}
-      gcloud compute disks delete core-{{item}} --zone {{item}}
-      gcloud compute disks delete horizon-{{item}} --zone {{item}}
+      gcloud compute disks delete {{namespace}}-geth-{{item}} --zone {{item}}
+      gcloud compute disks delete {{namespace}}-stellar-{{item}} --zone {{item}}
     ignore_errors: yes
     with_items: "{{zones}}"
-  - name: Drop balancers
-    shell: gcloud compute forwarding-rules list | gawk 'NR>1 {print $1}' | xargs gcloud compute forwarding-rules delete --region {{region}}
-    ignore_errors: yes
+  #- name: Drop balancers
+  #  shell: gcloud compute forwarding-rules list | gawk 'NR>1 {print $1}' | xargs gcloud compute forwarding-rules delete --region {{region}}
+  #  ignore_errors: yes
 

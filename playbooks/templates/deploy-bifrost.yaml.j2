@@ -94,7 +94,7 @@ spec:
             - name: ISSUING_ACCOUNT
               value: "{{stellar_bifrost_cfg.stellar.issuer_public_key}}"
             - name: NODE_ENV
-              value: development
+              value: "{% if namespace != 'prod' %}development{% else %}production{% endif %}"
       volumes:
         - name: cloudsql-instance-credentials
           secret:

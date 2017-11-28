@@ -1,0 +1,43 @@
+---
+##
+# SQL INSTANCE
+##
+sql_cloudsql_proxy_image: gcr.io/cloudsql-docker/gce-proxy:1.09
+
+##
+# PERSISTENT VOLUMES
+##
+storage_class_parameters_type: pd-standard
+
+##
+# GETH
+##
+geth_image: ethereum/client-go
+geth_data_disk: geth-data
+
+##
+# STELLAR
+##
+#
+# STELLAR CORE
+#
+stellar_core_image: "otokarev/stellar-core:v0.1.7"
+stellar_core_data_disk: core-data
+#
+# STELLAR HORIZON
+#
+stellar_horizon_proxy_cfg_template_path: ./files/https-proxy.template
+stellar_horizon_image: "otokarev/stellar-horizon:v0.1.2"
+stellar_horizon_ssl_crt_filename: "{{stellar_horizon_ssl_crt_path | basename}}"
+stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
+
+##
+# BIFROST
+##
+stellar_bifrost_database_instance: "{{project}}:{{region}}:{{sql_instance_id}}=tcp:5432"
+stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.0"
+
+##
+# STELLAR BIFROST CLIENT (sample)
+##
+stellar_bifrost_client_image: "otokarev/stellar-bifrost-client:v0.1.0"

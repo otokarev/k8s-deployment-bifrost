@@ -6,6 +6,8 @@
   vars:
 
   tasks:
+  - name: Set namespace `{{namespace}}`
+    shell: kubectl config set-context $(kubectl config current-context) --namespace={{namespace}}
   - name: Drop PVs
     shell: kubectl get pv -o go-template='{%raw%}{{range .items }}{{.metadata.name}} {{end}}{%endraw%}' | xargs kubectl delete pv
     ignore_errors: yes

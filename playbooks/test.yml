@@ -3,6 +3,7 @@
   connection: local
 
   tasks:
-  - debug: msg="{{stellar_bifrost_cfg}}"
+  - debug: msg="{{geth_image}}"
+  - debug: msg="{{region}}"
 
 

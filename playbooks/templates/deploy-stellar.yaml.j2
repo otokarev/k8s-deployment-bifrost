@@ -167,8 +167,5 @@ spec:
         - ReadWriteOnce
       resources:
         requests:
-          storage: 40Gi
-      storageClassName: slow
-      selector:
-        matchLabels:
-          service: "stellar"
+          storage: "{{stellar_storage_capacity}}"
+      storageClassName: "{{namespace}}-stellar"

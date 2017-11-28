@@ -68,8 +68,5 @@ spec:
         - ReadWriteOnce
       resources:
         requests:
-          storage: 20Gi
-      storageClassName: slow
-      selector:
-        matchLabels:
-          service: "geth"
+          storage: "{{geth_storage_capacity}}"
+      storageClassName: "{{namespace}}-geth"
