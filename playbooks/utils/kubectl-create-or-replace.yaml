@@ -1,0 +1,21 @@
+- name: Check `{{controller_name}}` controller availability
+  shell: kubectl get {{controller_kind}} | gawk 'NR>1 {if ($1 ~ /^{{controller_name}}/) print $1}'
+  register: output
+- set_fact:
+    controller_deployed: "{{output.stdout_lines[0] is defined}}"
+
+- name: Parse template `{{controller_kind}}/{{controller_name}}.yaml.j2` -> `cache/{{controller_kind}}/{{controller_name}}.yaml`
+  template:
+    src: "{{controller_kind}}/{{controller_name}}.yaml.j2"
+    dest: "./cache/{{controller_kind}}/{{controller_name}}.yaml"
+  register: output
+- set_fact:
+    controller_config_changed: "{{output.changed}}"
+
+- name: Create `{{controller_name}}` controller"
+  shell: kubectl create -f ./cache/{{controller_kind}}/{{controller_name}}.yaml
+  when: controller_deployed == false
+
+- name: Replace `{{controller_name}}` controller
+  shell: kubectl replace -f ./cache/{{controller_kind}}/{{controller_name}}.yaml
+  when: controller_deployed == true and controller_config_changed == true

@@ -52,13 +52,10 @@
   - name: Set namespace `{{namespace}}`
     shell: kubectl config set-context $(kubectl config current-context) --namespace={{namespace}}
 
-  - name: Generate Namespaces YAML
-    template:
-      src: deploy-namespaces.yaml.j2
-      dest: ./tmp/deploy-namespaces.yaml
   - name: Deploy namespaces
-    shell: kubectl create -f ./tmp/deploy-namespaces.yaml
-    ignore_errors: yes
+    include_tasks: utils/kubectl-create.yaml
+    vars:
+      template: ns/namespaces.yaml.j2
 
   ##
   # BALANCER IPS
@@ -91,24 +88,23 @@
     ignore_errors: yes
     with_items: "{{zones}}"
 
-  - name: Generate Volumes YAML
-    template:
-      src: deploy-volumes.yaml.j2
-      dest: ./tmp/deploy-volumes.yaml
   - name: Deploy volumes
-    shell: kubectl create -f ./tmp/deploy-volumes.yaml
-    ignore_errors: yes
+    include_tasks: utils/kubectl-create.yaml
+    vars:
+      template: pv/volumes.yaml.j2
 
   ##
   # Deploy GETH
   ##
-  - name: Generate Geth YAML
-    template:
-      src: deploy-geth.yaml.j2
-      dest: ./tmp/deploy-geth.yaml
-  - name: Deploy geth
-    shell: kubectl create -f ./tmp/deploy-geth.yaml
-    ignore_errors: yes
+  - name: Deploy geth service
+    include_tasks: utils/kubectl-create.yaml
+    vars:
+      template: svc/geth.yaml.j2
+  - name: Deploy geth controller
+    include_tasks: utils/kubectl-create-or-replace.yaml
+    vars:
+      controller_kind: sts
+      controller_name: geth
 
   ##
   # Deploy STELLAR
@@ -125,13 +121,15 @@
       --from-file={{stellar_horizon_proxy_cfg_template_path}}
     ignore_errors: yes
 
-  - name: Generate Stellar YAML
-    template:
-      src: deploy-stellar.yaml.j2
-      dest: ./tmp/deploy-stellar.yaml
-  - name: Deploy stellar
-    shell: kubectl create -f ./tmp/deploy-stellar.yaml
-    ignore_errors: yes
+  - name: Deploy stellar service
+    include_tasks: utils/kubectl-create.yaml
+    vars:
+      template: svc/stellar.yaml.j2
+  - name: Deploy stellar controller
+    include_tasks: utils/kubectl-create-or-replace.yaml
+    vars:
+      controller_kind: sts
+      controller_name: stellar
 
   ##
   # Deploy BIFROST
@@ -146,10 +144,13 @@
       --from-literal=STELLAR_BIFROST_DATABASE_URL="{{stellar_bifrost_database_url}}"
     ignore_errors: yes
 
-  - name: Generate Bifrost YAML
-    template:
-      src: deploy-bifrost.yaml.j2
-      dest: ./tmp/deploy-bifrost.yaml
-  - name: Deploy Bifrost
-    shell: kubectl create -f ./tmp/deploy-bifrost.yaml
-    ignore_errors: yes
+  - name: Deploy bifrost service
+    include_tasks: utils/kubectl-create.yaml
+    vars:
+      template: svc/bifrost.yaml.j2
+  - name: Deploy bifrost controller
+    include_tasks: utils/kubectl-create-or-replace.yaml
+    vars:
+      controller_kind: sts
+      controller_name: bifrost
+

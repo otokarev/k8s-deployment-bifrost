@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: geth-backend
+  labels:
+    app: geth
+    tier: backend
+spec:
+  clusterIP: None
+  selector:
+    app: geth
+  ports:
+  - protocol: TCP
+    port: 8545
+    name: geth-rpc

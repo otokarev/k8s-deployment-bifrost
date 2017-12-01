@@ -1,26 +1,9 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: geth-backend
-  labels:
-    app: geth
-    tier: backend
-spec:
-  clusterIP: None
-  selector:
-    app: geth
-  ports:
-  - protocol: TCP
-    port: 8545
-    name: geth-rpc
----
-
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: geth
 spec:
-  replicas: 1
+  replicas: {{replicas}}
   serviceName: geth
   updateStrategy:
     type: RollingUpdate
@@ -49,7 +32,7 @@ spec:
             - --rpccorsdomain=*
             - --rpcapi=net,eth
             - --testnet
-            - --cache=2048
+            - --cache=1024
             - --light
             - --datadir=/data
           ports:
