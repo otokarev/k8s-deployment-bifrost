@@ -17,6 +17,7 @@ storage_class_parameters_type: pd-standard
 ##
 geth_image: ethereum/client-go
 geth_data_disk: geth-data
+geth_args: --datadir=/data --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth --testnet --cache=2048 --fast
 
 ##
 # STELLAR
@@ -37,8 +38,8 @@ stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
 ##
 # BIFROST
 ##
-stellar_bifrost_database_instance: "{{project}}:{{region}}:{{sql_instance_id}}=tcp:5432"
-stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.0"
+stellar_bifrost_sql_instance: "{{project}}:{{region}}:{{stellar_bifrost_sql_instance_id}}=tcp:5432"
+stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.1"
 
 ##
 # STELLAR BIFROST CLIENT (sample)

@@ -10,30 +10,9 @@
   ###
   # SQL INSTANCE
   ##
-  - name: Check if SQL instance installed
-    shell: gcloud sql instances list | grep {{sql_instance_id}} | wc -c
-    register: output
-  - set_fact:
-      sql_not_installed: "{{ true if output.stdout_lines[0] == '0' else false}}"
-  - name: Create SQL intstance
-    shell: >
-      gcloud sql instances create {{sql_instance_id}}
-      --no-backup
-      --database-version=POSTGRES_9_6
-      --storage-type=HDD
-      --region={{region}}
-      --cpu=1
-      --memory=3840MiB
-      --storage-auto-increase
-    when: sql_not_installed
-  - name: Create SQL User
-    shell: gcloud sql users create stellar '*' --password=1q2w3e --instance={{sql_instance_id}}
-    ignore_errors: yes
-    when: sql_not_installed
-  - name: Create bifrost DB
-    shell: gcloud sql databases create bifrost  --instance={{sql_instance_id}}
-    ignore_errors: yes
-    when: sql_not_installed
+  - name: Install/Configure SQL instance
+    include_tasks: utils/deploy-sql.yaml
+    when: stellar_bifrost_sql_instance_id is defined
   ##
   # K8S CLUSTER
   ##
@@ -43,7 +22,7 @@
       --no-enable-cloud-logging
       --enable-cloud-monitoring
       --no-enable-cloud-endpoints
-      --num-nodes=2
+      --num-nodes=1
       --machine-type={{machine_type}}
       --zone={{zones[0]}} --additional-zones={{zones[1]}}
     ignore_errors: yes
@@ -135,7 +114,7 @@
   # Deploy BIFROST
   ##
   - name: Deploy secret with database client credentials
-    shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json={{sql_client_key_path}}
+    shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json={{stellar_bifrost_sql_client_key_path}}
     ignore_errors: yes
   - name: Deploy secret with Bifrost credentials
     shell: >

@@ -5,6 +5,7 @@ metadata:
 spec:
   replicas: {{replicas}}
   serviceName: bifrost
+  podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   template:
@@ -22,11 +23,18 @@ spec:
                 values:
                 - bifrost
             topologyKey: "failure-domain.beta.kubernetes.io/zone"
+      initContainers:
+      - name: init-geth
+        image: busybox
+        command: ['sh', '-c', 'until nslookup geth-backend; do echo waiting for geth-backend; sleep 2; done;']
+      - name: init-stellar
+        image: busybox
+        command: ['sh', '-c', 'until nslookup stellar-backend; do echo waiting for stellar-backend; sleep 2; done;']
       containers:
         - name: cloudsql-proxy
           image: "{{sql_cloudsql_proxy_image}}"
           command: ["/cloud_sql_proxy", "--dir=/cloudsql",
-                    "-instances={{stellar_bifrost_database_instance}}",
+                    "-instances={{stellar_bifrost_sql_instance}}",
                     "-credential_file=/secrets/cloudsql/credentials.json"]
           volumeMounts:
             - name: cloudsql-instance-credentials
@@ -60,6 +68,11 @@ spec:
           ports:
           - name: http
             containerPort: 8000
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 3
 
         - name: client
           image: "{{stellar_bifrost_client_image}}"

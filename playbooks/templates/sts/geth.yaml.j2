@@ -5,6 +5,7 @@ metadata:
 spec:
   replicas: {{replicas}}
   serviceName: geth
+  podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   template:
@@ -26,20 +27,19 @@ spec:
         - name: geth
           image: "{{geth_image}}"
           command:
-            - geth
-            - --rpc
-            - --rpcaddr=0.0.0.0
-            - --rpccorsdomain=*
-            - --rpcapi=net,eth
-            - --testnet
-            - --cache=1024
-            - --light
-            - --datadir=/data
+            - "sh"
+            - "-c"
+            - "geth {{geth_args}}"
           ports:
           - name: geth-rpc
             containerPort: 8545
           - name: geth-peers
             containerPort: 3030
+          readinessProbe:
+            tcpSocket:
+              port: 8545
+            initialDelaySeconds: 3
+            periodSeconds: 3
           volumeMounts:
           - name: geth-data
             mountPath: /data

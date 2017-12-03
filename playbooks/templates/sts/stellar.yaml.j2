@@ -5,6 +5,7 @@ metadata:
 spec:
   replicas: {{replicas}}
   serviceName: stellar
+  podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   template:
@@ -30,6 +31,24 @@ spec:
             containerPort: 11625
           - name: core-peer
             containerPort: 11626
+          command:
+            - "sh"
+            - "-c"
+            - |
+              if [ -d /data/buckets ];
+              then
+              echo "/data/buckets exists, so skip DB schema creation";
+              NONEWDB=1;
+              else
+              echo "/data/buckets does not exist, initialize DB schema";
+              NONEWDB="";
+              fi;
+              /bin/bash /start
+          readinessProbe:
+            tcpSocket:
+              port: 11625
+            initialDelaySeconds: 3
+            periodSeconds: 3
           volumeMounts:
           - name: stellar-core-cfg
             mountPath: /configs
@@ -64,10 +83,24 @@ spec:
           command:
             - "sh"
             - "-c"
-            - "horizon db init; horizon --port 8000 --db-url=$(DATABASE_URL) --stellar-core-db-url=$(STELLAR_CORE_DATABASE_URL) --ingest=true --stellar-core-url=http://127.0.0.1:11626"
+            - |
+              if [ ! -f /data/database-initialized ];
+              then
+              horizon db init;
+              touch /data/database-initialized;
+              echo "Horizon DB initialized";
+              else
+              echo "Horizon DB was initialized before";
+              fi;
+              horizon --port 8000 --db-url=$(DATABASE_URL) --stellar-core-db-url=$(STELLAR_CORE_DATABASE_URL) --ingest=true --stellar-core-url=http://127.0.0.1:11626
           ports:
           - name: horizon-http
             containerPort: 8000
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 3
           env:
             - name: DATABASE_URL
               value: postgres://horizon:1q2w3e@127.0.0.1:6432/horizon?sslmode=disable
@@ -75,6 +108,10 @@ spec:
               value: postgres://core:1q2w3e@127.0.0.1:5432/core?sslmode=disable
             - name: INGEST
               value: "true"
+          volumeMounts:
+          - name: stellar-data
+            subPath: horizon-data
+            mountPath: /data
 
         - name: horizon-db
           image: postgres
@@ -88,6 +125,11 @@ spec:
               value: 1q2w3e
             - name: PGPORT
               value: "6432"
+          readinessProbe:
+            tcpSocket:
+              port: 6432
+            initialDelaySeconds: 3
+            periodSeconds: 3
           volumeMounts:
           - name: stellar-data
             subPath: horizon-pgdata

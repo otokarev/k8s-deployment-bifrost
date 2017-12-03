@@ -1,0 +1,24 @@
+- name: Check if SQL instance installed
+  shell: gcloud sql instances list | grep {{stellar_bifrost_sql_instance_id}} | wc -c
+  register: output
+- set_fact:
+    sql_not_installed: "{{ true if output.stdout_lines[0] == '0' else false}}"
+- name: Create SQL intstance
+  shell: >
+    gcloud sql instances create {{stellar_bifrost_sql_instance_id}}
+    --no-backup
+    --database-version=POSTGRES_9_6
+    --storage-type=HDD
+    --region={{region}}
+    --cpu=1
+    --memory=3840MiB
+    --storage-auto-increase
+  when: sql_not_installed
+- name: Create SQL User
+  shell: gcloud sql users create stellar '*' --password=1q2w3e --instance={{stellar_bifrost_sql_instance_id}}
+  ignore_errors: yes
+  when: sql_not_installed
+- name: Create bifrost DB
+  shell: gcloud sql databases create bifrost  --instance={{stellar_bifrost_sql_instance_id}}
+  ignore_errors: yes
+  when: sql_not_installed

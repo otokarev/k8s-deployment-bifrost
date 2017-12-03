@@ -6,12 +6,6 @@ project: lucid-course-142515
 namespace: dev
 
 ##
-# SQL INSTANCE
-##
-sql_instance_id: bifrost-19
-sql_client_key_path: /somewhere/stellar-sql-client-key.json
-
-##
 # PERSISTENT VOLUMES
 ##
 storage_class_parameters_type: pd-standard
@@ -38,6 +32,14 @@ stellar_horizon_ssl_key_path: /somewhere/certs/cert.key
 ##
 # BIFROST
 ##
+
+# if `stellar_bifrost_sql_instance_id` is defined, new SQL Instance will be created
+#stellar_bifrost_sql_instance_id: bifrost-28
+
+# Comment string below if `stellar_bifrost_sql_instance_id` is defined
+stellar_bifrost_sql_instance: "lucid-course-142515:europe-west1:bifrost-28=tcp:5432"
+
+stellar_bifrost_sql_client_key_path: ../stellar-sql-client-key.json
 stellar_bifrost_ethereum_start_block: 2150000
 stellar_bifrost_database_url: "postgres://...@127.0.0.1/...?sslmode=disable"
 stellar_bifrost_cfg:
