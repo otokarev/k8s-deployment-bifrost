@@ -86,9 +86,7 @@ spec:
             - |
               if [ ! -f /data/database-initialized ];
               then
-              horizon db init;
-              touch /data/database-initialized;
-              echo "Horizon DB initialized";
+              horizon db init && touch /data/database-initialized && echo "Horizon DB initialized";
               else
               echo "Horizon DB was initialized before";
               fi;
