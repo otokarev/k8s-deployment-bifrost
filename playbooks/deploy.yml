@@ -62,8 +62,8 @@
   ##
   - name: Create disks
     shell: |
-      gcloud compute disks create {{namespace}}-geth-{{item}} --size {{geth_storage_capacity_gb}}GB --type pd-standard --zone {{item}}
-      gcloud compute disks create {{namespace}}-stellar-{{item}} --size {{stellar_storage_capacity_gb}}GB --type pd-standard --zone {{item}}
+      gcloud compute disks create {{namespace}}-geth-{{item}} --size {{geth_storage_capacity_gb}}GB --type {{storage_class_parameters_type}} --zone {{item}}
+      gcloud compute disks create {{namespace}}-stellar-{{item}} --size {{stellar_storage_capacity_gb}}GB --type {{storage_class_parameters_type}} --zone {{item}}
     ignore_errors: yes
     with_items: "{{zones}}"
 
