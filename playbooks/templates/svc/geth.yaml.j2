@@ -13,3 +13,20 @@ spec:
   - protocol: TCP
     port: 8545
     name: geth-rpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: geth-frontend
+  labels:
+    app: geth
+    tier: frontend
+spec:
+  type: LoadBalancer
+  loadBalancerIP: "{{geth_lb_ip}}"
+  selector:
+    app: geth
+  ports:
+  - protocol: TCP
+    port: 8545
+    name: geth-rpc
