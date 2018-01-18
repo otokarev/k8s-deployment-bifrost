@@ -1,0 +1,50 @@
+##
+# BALANCER IPS
+##
+- name: Deploy Stellar lb static IP
+  shell: gcloud compute addresses create {{namespace}}-stellar-lb-ip --region={{region}}
+  ignore_errors: yes
+- name: Set stellar_lb_ip
+  shell: gcloud compute addresses list | grep {{namespace}}-stellar-lb-ip | gawk '{print $3}'
+  register: output
+- set_fact:
+    stellar_lb_ip: "{{output.stdout_lines[0]}}"
+
+##
+# DISKS & PERSISTENT VOLUMES(CLASSES)
+##
+- name: Create disks
+  shell: |
+    gcloud compute disks create {{namespace}}-stellar-{{item}} --size {{stellar_storage_capacity_gb}}GB --type {{storage_class_parameters_type}} --zone {{item}}
+  ignore_errors: yes
+  with_items: "{{zones}}"
+
+- name: Deploy volumes
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: pv/stellar.yaml.j2
+
+##
+# Deploy STELLAR
+##
+- name: Deploy secret with Stellar Core configuration file
+  shell: kubectl create secret generic stellar-core-cfg --from-file=stellar-core.cfg={{stellar_core_cfg_path}}
+  ignore_errors: yes
+
+- name: Deploy secret with Horizon Proxy SSL credentials and nginx config
+  shell: >
+    kubectl create secret generic stellar-horizon-proxy-secret \
+    --from-file={{stellar_horizon_ssl_crt_path}} \
+    --from-file={{stellar_horizon_ssl_key_path}} \
+    --from-file={{stellar_horizon_proxy_cfg_template_path}}
+  ignore_errors: yes
+
+- name: Deploy stellar service
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: svc/stellar.yaml.j2
+- name: Deploy stellar controller
+  include_tasks: utils/kubectl-create-or-replace.yaml
+  vars:
+    controller_kind: sts
+    controller_name: stellar

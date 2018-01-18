@@ -9,9 +9,5 @@
   tasks:
   - name: Deploy Kubernates cluster
     include_tasks: deploy/cluster.yml
-  - name: Deploy Geth
-    include_tasks: deploy/geth.yml
   - name: Deploy Stellar
     include_tasks: deploy/stellar.yml
-  - name: Deploy Bifrost
-    include_tasks: deploy/bifrost.yml

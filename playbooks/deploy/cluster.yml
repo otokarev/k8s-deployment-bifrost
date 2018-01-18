@@ -1,0 +1,19 @@
+- name: Create cluster
+  shell: >
+    gcloud container clusters create {{cluster_name}}
+    --no-enable-cloud-logging
+    --enable-cloud-monitoring
+    --no-enable-cloud-endpoints
+    --num-nodes=1
+    --machine-type={{machine_type}}
+    --zone={{zones[0]}} --additional-zones={{zones[1]}}
+  ignore_errors: yes
+- name: Get k8s credentials from gcloud
+  shell: gcloud container clusters get-credentials {{cluster_name}} --zone {{zones[0]}} --project {{project}}
+- name: Set namespace `{{namespace}}`
+  shell: kubectl config set-context $(kubectl config current-context) --namespace={{namespace}}
+
+- name: Deploy namespaces
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: ns/namespaces.yaml.j2

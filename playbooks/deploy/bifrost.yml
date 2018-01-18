@@ -1,0 +1,42 @@
+###
+# SQL INSTANCE
+##
+- name: Install/Configure SQL instance
+  include_tasks: utils/deploy-sql.yaml
+  when: stellar_bifrost_sql_instance_id is defined
+
+##
+# BALANCER IPS
+##
+- name: Deploy Bifrost lb static IP
+  shell: gcloud compute addresses create {{namespace}}-stellar-bifrost-lb-ip --region={{region}}
+  ignore_errors: yes
+- name: Set stellar_lb_ip
+  shell: gcloud compute addresses list | grep {{namespace}}-stellar-bifrost-lb-ip | gawk '{print $3}'
+  register: output
+- set_fact:
+    bifrost_lb_ip: "{{output.stdout_lines[0]}}"
+
+##
+# Deploy BIFROST
+##
+- name: Deploy secret with database client credentials
+  shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json={{stellar_bifrost_sql_client_key_path}}
+  ignore_errors: yes
+- name: Deploy secret with Bifrost credentials
+  shell: >
+    kubectl create secret generic stellar-bifrost-credentials
+    --from-literal=STELLAR_BIFROST_CFG='{{stellar_bifrost_cfg|to_json}}'
+    --from-literal=STELLAR_BIFROST_DATABASE_URL="{{stellar_bifrost_database_url}}"
+  ignore_errors: yes
+
+- name: Deploy bifrost service
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: svc/bifrost.yaml.j2
+- name: Deploy bifrost controller
+  include_tasks: utils/kubectl-create-or-replace.yaml
+  vars:
+    controller_kind: sts
+    controller_name: bifrost
+
