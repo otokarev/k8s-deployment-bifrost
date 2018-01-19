@@ -6,7 +6,7 @@
     --no-enable-cloud-endpoints
     --num-nodes=1
     --machine-type={{machine_type}}
-    --zone={{zones[0]}} --additional-zones={{zones[1]}}
+    --zone={{zones[0]}} {% if zones[1] is defined %} --additional-zones={{zones[1]}} {% endif %}
   ignore_errors: yes
 - name: Get k8s credentials from gcloud
   shell: gcloud container clusters get-credentials {{cluster_name}} --zone {{zones[0]}} --project {{project}}

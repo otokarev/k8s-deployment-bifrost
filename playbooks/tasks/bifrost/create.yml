@@ -12,7 +12,7 @@
   shell: gcloud compute addresses create {{namespace}}-stellar-bifrost-lb-ip --region={{region}}
   ignore_errors: yes
 - name: Set stellar_lb_ip
-  shell: gcloud compute addresses list | grep {{namespace}}-stellar-bifrost-lb-ip | gawk '{print $3}'
+  shell: gcloud compute addresses list --regions={{region}} | grep {{namespace}}-stellar-bifrost-lb-ip | gawk '{print $3}'
   register: output
 - set_fact:
     bifrost_lb_ip: "{{output.stdout_lines[0]}}"

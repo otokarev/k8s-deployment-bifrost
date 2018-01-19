@@ -1,0 +1,28 @@
+- name: Delete geth lb static IP
+  shell: gcloud compute addresses delete -q {{namespace}}-geth-lb-ip --region={{region}}
+  ignore_errors: yes
+  when: force_ips_drop is defined
+
+- name: Delete geth service
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: svc/geth.yaml.j2
+    geth_lb_ip: "127.0.0.1" #dummy value to make template work
+
+- name: Delete geth controller
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: sts/geth.yaml.j2
+    geth_lb_ip: "127.0.0.1" #dummy value to make template work
+
+- name: Delete disks
+  shell: |
+    gcloud compute disks delete -q {{namespace}}-geth-{{item}} --zone {{item}}
+  ignore_errors: yes
+  with_items: "{{zones}}"
+  when: force_disks_drop is defined
+
+- name: Delete volumes
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: pv/geth.yaml.j2

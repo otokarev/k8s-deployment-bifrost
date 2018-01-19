@@ -1,4 +1,4 @@
-- name: Deploy Stellar
+- name: Drop stellar
   hosts: localhost
   connection: local
   gather_facts: no
@@ -7,5 +7,5 @@
     additional_zones:
 
   tasks:
-  - name: Deploy Stellar
-    include_tasks: tasks/stellar/create.yml
+  - name: Drop Stellar
+    include_tasks: tasks/stellar/drop.yml

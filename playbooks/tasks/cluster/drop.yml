@@ -1,0 +1,4 @@
+- name: Drop cluster
+  shell: gcloud container clusters delete -q {{cluster_name}} --zone={{zones[0]}} --quiet
+  ignore_errors: yes
+

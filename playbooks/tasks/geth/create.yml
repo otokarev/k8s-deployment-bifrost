@@ -5,7 +5,7 @@
   shell: gcloud compute addresses create {{namespace}}-geth-lb-ip --region={{region}}
   ignore_errors: yes
 - name: Set geth_lb_ip
-  shell: gcloud compute addresses list | grep {{namespace}}-geth-lb-ip | gawk '{print $3}'
+  shell: gcloud compute addresses list --regions={{region}} | grep {{namespace}}-geth-lb-ip | gawk '{print $3}'
   register: output
 - set_fact:
     geth_lb_ip: "{{output.stdout_lines[0]}}"

@@ -1,0 +1,8 @@
+  - name: Parse `{{template}}`
+    template:
+      src: "{{template}}"
+      dest: ./cache/{{template|regex_replace('\.j2$')}}
+  - name: Delete {{template|regex_replace('\.yaml\.j2$')}}
+    shell: kubectl delete -f ./cache/{{template|regex_replace('\.j2$')}}
+    ignore_errors: yes
+
