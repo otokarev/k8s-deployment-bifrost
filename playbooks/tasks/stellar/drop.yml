@@ -21,15 +21,15 @@
   vars:
     template: sts/stellar.yaml.j2
 
+- name: Drop volumes
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: pv/stellar.yaml.j2
+
 - name: Drop disks
   shell: |
     gcloud compute disks delete -q {{namespace}}-stellar-{{item}} --zone {{item}}
   ignore_errors: yes
   with_items: "{{zones}}"
   when: force_disks_drop is defined
-
-- name: Drop volumes
-  include_tasks: utils/kubectl-delete.yaml
-  vars:
-    template: pv/stellar.yaml.j2
 
