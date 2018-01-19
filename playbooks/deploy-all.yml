@@ -7,6 +7,8 @@
     additional_zones:
 
   tasks:
+  - name: Load credentials
+    include_tasks: tasks/init.yml
   - name: Deploy Geth
     include_tasks: tasks/geth/create.yml
   - name: Deploy Stellar

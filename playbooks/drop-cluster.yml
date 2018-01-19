@@ -7,5 +7,7 @@
     additional_zones:
 
   tasks:
+  - name: Load credentials
+    include_tasks: tasks/init.yml
   - name: Drop Kubernates cluster
     include_tasks: tasks/cluster/drop.yml

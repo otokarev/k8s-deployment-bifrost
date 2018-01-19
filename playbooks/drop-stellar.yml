@@ -7,5 +7,7 @@
     additional_zones:
 
   tasks:
+  - name: Load credentials
+    include_tasks: tasks/init.yml
   - name: Drop Stellar
     include_tasks: tasks/stellar/drop.yml

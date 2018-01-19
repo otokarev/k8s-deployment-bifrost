@@ -8,10 +8,6 @@
     --machine-type={{machine_type}}
     --zone={{zones[0]}} {% if zones[1] is defined %} --additional-zones={{zones[1]}} {% endif %}
   ignore_errors: yes
-- name: Get k8s credentials from gcloud
-  shell: gcloud container clusters get-credentials {{cluster_name}} --zone {{zones[0]}} --project {{project}}
-- name: Set namespace `{{namespace}}`
-  shell: kubectl config set-context $(kubectl config current-context) --namespace={{namespace}}
 
 - name: Deploy namespaces
   include_tasks: utils/kubectl-create.yaml

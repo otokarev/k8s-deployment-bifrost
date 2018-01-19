@@ -6,6 +6,8 @@
   vars:
 
   tasks:
+  - name: Load credentials
+    include_tasks: tasks/init.yml
   - name: Drop bifrost
     include_tasks: tasks/bifrost/drop.yml
   - name: Drop stellar
