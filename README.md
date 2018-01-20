@@ -25,18 +25,47 @@ DATABASE="__DATABASE_URL__"`
 ```
 
 ## Deployment
-Deploy the application (including SQL instance, cluster, etc)
+Deploy a cluster
 ```
-ansible-playbook -i dev playbooks/deploy.yml 
+ansible-playbook -i dev playbooks/deploy-cluster.yml 
 ```
-
+Deploy all applications in the cluster
+```
+ansible-playbook -i dev playbooks/deploy-all.yml 
+```
+Deploy `geth` only
+```
+ansible-playbook -i dev playbooks/deploy-geth.yml 
+```
+Deploy `stellar` only
+```
+ansible-playbook -i dev playbooks/deploy-stellar.yml 
+```
 It safe to run it several times. The tasks processed before will not block playbook processing.
 
-
-
-Remove the application, cluster, SQL instance, etc (DO NOT USE IT ON PRODUCTION)
-```text
+Drop `geth` only
+```
+ansible-playbook -i dev playbooks/drop-geth.yml 
+```
+Drop `stellar` only
+```
+ansible-playbook -i dev playbooks/drop-stellar.yml 
+```
+Drop all apps
+```
 ansible-playbook -i dev playbooks/drop-all.yml 
+```
+
+By default `playbooks/drop-*` do not destroy disks and IPs. To force disks deletion use `-e force_disks_drop=1`. To force IPs deletion use `-e force_ips_drop=1`.
+
+Example:
+```
+ansible-playbook -i dev playbooks/drop-stellar.yml -e force_ips_drop=1 -e force_disks_drop=1
+```
+
+Drop the cluster
+```
+ansible-playbook -i dev playbooks/drop-cluster.yml 
 ```
 
 ## Maintenance
