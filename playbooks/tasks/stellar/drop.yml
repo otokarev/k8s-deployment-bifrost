@@ -26,10 +26,17 @@
   vars:
     template: pv/stellar.yaml.j2
 
+- name: Drop volume claims
+  shell: kubectl delete pvc/stellar-data-stellar-{{item.0}}
+  ignore_errors: yes
+  with_indexed_items: "{{zones}}"
+
 - name: Drop disks
   shell: |
-    gcloud compute disks delete -q {{namespace}}-stellar-{{item}} --zone {{item}}
+    until gcloud compute disks delete -q {{namespace}}-stellar-{{item}} --zone {{item}}; do : ; done;
   ignore_errors: yes
   with_items: "{{zones}}"
+  async: 15
+  poll: 3
   when: force_disks_drop is defined
 
