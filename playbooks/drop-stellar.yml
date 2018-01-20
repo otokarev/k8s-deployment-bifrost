@@ -1,17 +1,13 @@
-- name: Clean all
+- name: Drop stellar
   hosts: localhost
   connection: local
   gather_facts: no
 
   vars:
+    additional_zones:
 
   tasks:
   - name: Load credentials
     include_tasks: tasks/init.yml
-  - name: Drop bifrost
-    include_tasks: tasks/bifrost/drop.yml
-  - name: Drop stellar
+  - name: Drop Stellar
     include_tasks: tasks/stellar/drop.yml
-  - name: Drop geth
-    include_tasks: tasks/geth/drop.yml
-

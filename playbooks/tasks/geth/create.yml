@@ -1,0 +1,38 @@
+##
+# BALANCER IPS
+##
+- name: Deploy Geth lb static IP
+  shell: gcloud compute addresses create {{namespace}}-geth-lb-ip --region={{region}}
+  ignore_errors: yes
+- name: Set geth_lb_ip
+  shell: gcloud compute addresses list --regions={{region}} | grep {{namespace}}-geth-lb-ip | gawk '{print $3}'
+  register: output
+- set_fact:
+    geth_lb_ip: "{{output.stdout_lines[0]}}"
+
+##
+# DISKS & PERSISTENT VOLUMES(CLASSES)
+##
+- name: Create disks
+  shell: |
+    gcloud compute disks create {{namespace}}-geth-{{item}} --size {{geth_storage_capacity_gb}}GB --type {{storage_class_parameters_type}} --zone {{item}}
+  ignore_errors: yes
+  with_items: "{{zones}}"
+
+- name: Deploy volumes
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: pv/geth.yaml.j2
+
+##
+# Deploy GETH
+##
+- name: Deploy geth service
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: svc/geth.yaml.j2
+- name: Deploy geth controller
+  include_tasks: utils/kubectl-create-or-replace.yaml
+  vars:
+    controller_kind: sts
+    controller_name: geth

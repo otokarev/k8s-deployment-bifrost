@@ -1,0 +1,42 @@
+- name: Delete stellar lb static IP
+  shell: gcloud compute addresses delete -q {{namespace}}-stellar-lb-ip --region={{region}}
+  ignore_errors: yes
+  when: force_ips_drop is defined
+
+- name: Delete stellar secrets
+  shell: kubectl delete secret {{item}}
+  ignore_errors: yes
+  with_items:
+    - 'stellar-core-cfg'
+    - 'stellar-horizon-proxy-secret'
+
+- name: Delete stellar service
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: svc/stellar.yaml.j2
+    stellar_lb_ip: "127.0.0.1" #dummy value to make template work
+
+- name: Delete stellar controller
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: sts/stellar.yaml.j2
+
+- name: Drop volumes
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: pv/stellar.yaml.j2
+
+- name: Drop volume claims
+  shell: kubectl delete pvc/stellar-data-stellar-{{item.0}}
+  ignore_errors: yes
+  with_indexed_items: "{{zones}}"
+
+- name: Drop disks
+  shell: |
+    until gcloud compute disks delete -q {{namespace}}-stellar-{{item}} --zone {{item}}; do : ; done;
+  ignore_errors: yes
+  with_items: "{{zones}}"
+  async: 15
+  poll: 3
+  when: force_disks_drop is defined
+

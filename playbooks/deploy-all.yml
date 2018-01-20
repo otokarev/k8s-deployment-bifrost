@@ -1,0 +1,17 @@
+- name: Deploy all
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    additional_zones:
+
+  tasks:
+  - name: Load credentials
+    include_tasks: tasks/init.yml
+  - name: Deploy Geth
+    include_tasks: tasks/geth/create.yml
+  - name: Deploy Stellar
+    include_tasks: tasks/stellar/create.yml
+  - name: Deploy Bifrost
+    include_tasks: tasks/bifrost/create.yml

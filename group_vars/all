@@ -25,13 +25,13 @@ geth_args: "--datadir=/data --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=n
 #
 # STELLAR CORE
 #
-stellar_core_image: "otokarev/stellar-core:v0.1.7"
+stellar_core_image: "otokarev/stellar-core:v0.1.8"
 stellar_core_data_disk: core-data
 #
 # STELLAR HORIZON
 #
 stellar_horizon_proxy_cfg_template_path: ./files/https-proxy.template
-stellar_horizon_image: "otokarev/stellar-horizon:v0.1.2"
+stellar_horizon_image: "otokarev/stellar-horizon:v0.1.2-v0.11.1"
 stellar_horizon_ssl_crt_filename: "{{stellar_horizon_ssl_crt_path | basename}}"
 stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
 

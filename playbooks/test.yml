@@ -3,7 +3,13 @@
   connection: local
 
   tasks:
-  - debug: msg="{{geth_image}}"
-  - debug: msg="{{region}}"
+  - name: Load credentials
+    include_tasks: tasks/init.yml
+  #- set_fact: version="{{'hui.yaml.j2'|regex_replace('\.j2$')}}"
+  #- debug: var=version
+  - include_tasks: utils/kubectl-create-or-replace.yaml
+    vars:
+      controller_name: geth
+      controller_kind: sts
 
 

@@ -1,0 +1,15 @@
+- name: Create cluster
+  shell: >
+    gcloud container clusters create {{cluster_name}}
+    --no-enable-cloud-logging
+    --enable-cloud-monitoring
+    --no-enable-cloud-endpoints
+    --num-nodes=1
+    --machine-type={{machine_type}}
+    --zone={{zones[0]}} {% if zones[1] is defined %} --additional-zones={{zones[1]}} {% endif %}
+  ignore_errors: yes
+
+- name: Deploy namespaces
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: ns/namespaces.yaml.j2

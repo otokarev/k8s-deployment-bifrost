@@ -1,0 +1,13 @@
+- name: Deploy all
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    additional_zones:
+
+  tasks:
+  - name: Deploy Kubernates cluster
+    include_tasks: tasks/cluster/create.yml
+  - name: Load credentials
+    include_tasks: tasks/init.yml
