@@ -3,12 +3,15 @@
   ignore_errors: yes
   when: force_ips_drop is defined
 
-- name: Delete stellar secrets
-  shell: kubectl delete secret {{item}}
+- name: Delete stellar horizon secrets
+  shell: kubectl delete secret stellar-horizon-proxy-secret
   ignore_errors: yes
-  with_items:
-    - 'stellar-core-cfg'
-    - 'stellar-horizon-proxy-secret'
+
+- name: Delete stellar core config secrets
+  shell: for i in `kubectl get secrets -o go-template='{{"{{range .items}}{{.metadata.name}} {{end}}"}}'`; do [[ $i =~ ^stellar-core-cfg- ]] && kubectl delete secret $i; done
+  ignore_errors: yes
+  args:
+    executable: /bin/bash
 
 - name: Delete stellar service
   include_tasks: utils/kubectl-delete.yaml

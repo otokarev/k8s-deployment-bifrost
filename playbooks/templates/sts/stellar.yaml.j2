@@ -2,6 +2,8 @@ apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: stellar
+  labels:
+    core_config_version: "{{stellar_core_config_version}}"
 spec:
   replicas: {{replicas}}
   serviceName: stellar
@@ -161,7 +163,7 @@ spec:
       volumes:
         - name: stellar-core-cfg
           secret:
-            secretName: stellar-core-cfg
+            secretName: stellar-core-cfg-{{stellar_core_config_version}}
         - name: stellar-horizon-proxy-data
           secret:
             secretName: stellar-horizon-proxy-secret

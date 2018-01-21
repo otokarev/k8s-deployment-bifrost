@@ -23,6 +23,7 @@ stellar_storage_capacity_gb: 40
 # STELLAR CORE
 #
 stellar_core_cfg_path: /somewhere/stellar-core.cfg
+stellar_core_config_version: 1
 #
 # STELLAR HORIZON
 #

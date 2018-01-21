@@ -27,6 +27,7 @@ geth_args: "--datadir=/data --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=n
 #
 stellar_core_image: "otokarev/stellar-core:v0.1.8"
 stellar_core_data_disk: core-data
+stellar_core_config_version: 1
 #
 # STELLAR HORIZON
 #
