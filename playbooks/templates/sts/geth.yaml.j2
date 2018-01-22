@@ -33,8 +33,10 @@ spec:
           ports:
           - name: geth-rpc
             containerPort: 8545
+          - name: geth-ws
+            containerPort: 8546
           - name: geth-peers
-            containerPort: 3030
+            containerPort: 30303
           readinessProbe:
             tcpSocket:
               port: 8545

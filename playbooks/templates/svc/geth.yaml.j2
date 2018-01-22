@@ -13,6 +13,9 @@ spec:
   - protocol: TCP
     port: 8545
     name: geth-rpc
+  - protocol: TCP
+    port: 8546
+    name: geth-ws
 ---
 apiVersion: v1
 kind: Service
@@ -30,3 +33,9 @@ spec:
   - protocol: TCP
     port: 8545
     name: geth-rpc
+  - protocol: TCP
+    port: 8546
+    name: geth-ws
+  - protocol: TCP
+    port: 30303
+    name: geth-peers

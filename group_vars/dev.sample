@@ -14,6 +14,12 @@ storage_class_parameters_type: pd-standard
 # GETH
 ##
 geth_storage_capacity_gb: 20
+geth_args: >
+    --datadir=/data
+    --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth
+    --ws --wsaddr=0.0.0.0 --wsapi=net,eth --wsorigins=*
+    --ipcdisable
+    --testnet --cache=2048 --light
 
 ##
 # STELLAR
