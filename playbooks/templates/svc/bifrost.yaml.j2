@@ -21,12 +21,17 @@ spec:
     name: client-https
 
   - protocol: TCP
+    port: 80
+    targetPort: bfr-cl-http
+    name: client-http
+
+  - protocol: TCP
     port: 1443
     name: https
     targetPort: bfr-https
 
   - protocol: TCP
-    port: 80
+    port: 8080
     name: http
     targetPort: bfr-http
 

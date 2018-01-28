@@ -84,7 +84,7 @@ spec:
             - name: HORIZON_URL
               value: "https://{{stellar_bifrost_domain_name}}:$(BIFROST_FRONTEND_SERVICE_PORT_HORIZON_HTTPS)"
             - name: BIFROST_URL
-              value: "https://{{stellar_bifrost_domain_name}}:$(BIFROST_FRONTEND_SERVICE_PORT_HTTPS)"
+              value: "http://{{stellar_bifrost_domain_name}}:$(BIFROST_FRONTEND_SERVICE_PORT_HTTP)"
             - name: ISSUING_ACCOUNT
               value: "{{stellar_bifrost_cfg.stellar.issuer_public_key}}"
             - name: NODE_ENV
