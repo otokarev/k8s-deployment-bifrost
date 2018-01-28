@@ -5,16 +5,32 @@ metadata:
   labels:
     app: bifrost
     tier: frontend
+  annotations:
+    acme/certificate: '{{stellar_bifrost_domain_name}}'
+    acme/secretName: 'stellar-bifrost-cert-secret'
 spec:
   type: LoadBalancer
   loadBalancerIP: "{{bifrost_lb_ip}}"
   selector:
-    app: bifrost
+    bifrostApp: "1"
   ports:
+
   - protocol: TCP
-    port: 8000
-    name: http
+    port: 443
+    targetPort: bfr-cl-https
+    name: client-https
+
+  - protocol: TCP
+    port: 1443
+    name: https
+    targetPort: bfr-https
+
   - protocol: TCP
     port: 80
-    targetPort: 3000
-    name: client-http
+    name: http
+    targetPort: bfr-http
+
+  - protocol: TCP
+    port: 2443
+    targetPort: bfr-hrz-https
+    name: horizon-https

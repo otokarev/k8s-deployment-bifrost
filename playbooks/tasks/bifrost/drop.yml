@@ -14,12 +14,16 @@
   with_items:
     - 'cloudsql-instance-credentials'
     - 'stellar-bifrost-credentials'
+    - 'stellar-bifrost-proxy-secret'
+    - 'stellar-bifrost-cert-secret'
+  when: force_secrets_drop is defined
 
 - name: Delete bifrost service
   include_tasks: utils/kubectl-delete.yaml
   vars:
     template: svc/bifrost.yaml.j2
     bifrost_lb_ip: '127.0.0.1' #dummy value to make template work
+    stellar_bifrost_domain_name: '' #dummy value to make template work
 
 - name: Delete bifrost controller
   include_tasks: utils/kubectl-delete.yaml
@@ -27,4 +31,7 @@
     template: sts/bifrost.yaml.j2
     bifrost_lb_ip: '127.0.0.1' #dummy value to make template work
     stellar_lb_ip: '127.0.0.1' #dummy value to make template work
+    stellar_bifrost_ssl_crt_filename: '' #dummy value to make template work
+    stellar_bifrost_ssl_key_filename: '' #dummy value to make template work
+
 

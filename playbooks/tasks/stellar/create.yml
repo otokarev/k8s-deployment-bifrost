@@ -36,7 +36,7 @@
     kubectl create secret generic stellar-horizon-proxy-secret \
     --from-file={{stellar_horizon_ssl_crt_path}} \
     --from-file={{stellar_horizon_ssl_key_path}} \
-    --from-file={{stellar_horizon_proxy_cfg_template_path}}
+    --from-file={{nginx_proxy_cfg_template_path}}
   ignore_errors: yes
 
 - name: Deploy stellar service

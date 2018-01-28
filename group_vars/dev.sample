@@ -6,6 +6,11 @@ project: lucid-course-142515
 namespace: dev
 
 ##
+# LETSENCRYPT
+##
+letsencrypt_service_account_key_path: ../stellar-sql-client-key.json
+
+##
 # PERSISTENT VOLUMES
 ##
 storage_class_parameters_type: pd-standard
@@ -17,7 +22,7 @@ geth_storage_capacity_gb: 20
 geth_args: >
     --datadir=/data
     --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth
-    --ws --wsaddr=0.0.0.0 --wsapi=net,eth --wsorigins=*
+    --ws --wsaddr=0.0.0.0 --wsorigins=* --wsapi=net,eth
     --ipcdisable
     --testnet --cache=2048 --light
 
@@ -39,6 +44,7 @@ stellar_horizon_ssl_key_path: /somewhere/certs/cert.key
 ##
 # BIFROST
 ##
+stellar_bifrost_domain_name: bifrost.domain
 
 # if `stellar_bifrost_sql_instance_id` is defined, new SQL Instance will be created
 #stellar_bifrost_sql_instance_id: bifrost-28
@@ -62,6 +68,13 @@ stellar_bifrost_cfg:
     network_passphrase: "Test SDF Network ; September 2015"
   database:
     type: "postgres"
+
+stellar_bifrost_asset_price: 1
+stellar_bifrost_presale: 0
+
+# Letsencrypt is used instead
+#stellar_bifrost_ssl_crt_path: /somewhere/certs/cert.crt
+#stellar_bifrost_ssl_key_path: /somewhere/certs/cert.key
 
 ##
 # STELLAR BIFROST CLIENT (sample)

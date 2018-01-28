@@ -1,4 +1,4 @@
-- name: Check `{{controller_name}}` controller availability
+- name: Check `{{controller_kind}}/{{controller_name}}` availability
   shell: kubectl get {{controller_kind}} | gawk 'NR>1 {if ($1 ~ /^{{controller_name}}/) print $1}'
   register: output
 - set_fact:
@@ -12,10 +12,10 @@
 - set_fact:
     controller_config_changed: "{{output.changed}}"
 
-- name: Create `{{controller_name}}` controller"
+- name: Create `{{controller_kind}}/{{controller_name}}` controller"
   shell: kubectl create -f ./cache/{{controller_kind}}/{{controller_name}}.yaml
   when: controller_deployed == false
 
-- name: Replace `{{controller_name}}` controller
+- name: Replace `{{controller_kind}}/{{controller_name}}` controller
   shell: kubectl replace -f ./cache/{{controller_kind}}/{{controller_name}}.yaml
   when: controller_deployed == true and controller_config_changed == true

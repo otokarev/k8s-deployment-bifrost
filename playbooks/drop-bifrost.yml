@@ -1,0 +1,13 @@
+- name: Drop bifrost
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    additional_zones:
+
+  tasks:
+  - name: Load credentials
+    include_tasks: tasks/init.yml
+  - name: Drop bifrost
+    include_tasks: tasks/bifrost/drop.yml

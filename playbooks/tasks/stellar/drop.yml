@@ -6,12 +6,14 @@
 - name: Delete stellar horizon secrets
   shell: kubectl delete secret stellar-horizon-proxy-secret
   ignore_errors: yes
+  when: force_secrets_drop is defined
 
 - name: Delete stellar core config secrets
   shell: for i in `kubectl get secrets -o go-template='{{"{{range .items}}{{.metadata.name}} {{end}}"}}'`; do [[ $i =~ ^stellar-core-cfg- ]] && kubectl delete secret $i; done
   ignore_errors: yes
   args:
     executable: /bin/bash
+  when: force_secrets_drop is defined
 
 - name: Delete stellar service
   include_tasks: utils/kubectl-delete.yaml
