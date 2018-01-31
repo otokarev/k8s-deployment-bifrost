@@ -1,41 +1,54 @@
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: bifrost-frontend
+#  labels:
+#    app: bifrost
+#    tier: frontend
+#  annotations:
+#    acme/certificate: '{{stellar_bifrost_domain_name}}'
+#    #acme/secretName: 'stellar-bifrost-cert-secret'
+#    acme/secretName: 'stellar-bifrost-tls-secret'
+#spec:
+#  type: LoadBalancer
+#  loadBalancerIP: "{{bifrost_lb_ip}}"
+#  selector:
+#    bifrostApp: "1"
+#  ports:
+#  - protocol: TCP
+#    port: 443
+#    targetPort: bfr-cl-https
+#    name: client-https
+#  - protocol: TCP
+#    port: 1443
+#    name: https
+#    targetPort: bfr-https
+#  - protocol: TCP
+#    port: 2443
+#    targetPort: bfr-hrz-https
+#    name: horizon-https
+#---
 apiVersion: v1
 kind: Service
 metadata:
-  name: bifrost-frontend
+  name: bifrost-backend
   labels:
     app: bifrost
-    tier: frontend
+    tier: backend
   annotations:
     acme/certificate: '{{stellar_bifrost_domain_name}}'
-    acme/secretName: 'stellar-bifrost-cert-secret'
+    #acme/secretName: 'stellar-bifrost-cert-secret'
+    acme/secretName: 'stellar-bifrost-tls-secret'
 spec:
-  type: LoadBalancer
-  loadBalancerIP: "{{bifrost_lb_ip}}"
+  type: NodePort
   selector:
     bifrostApp: "1"
   ports:
-
-  - protocol: TCP
-    port: 443
-    targetPort: bfr-cl-https
-    name: client-https
-
   - protocol: TCP
     port: 80
     targetPort: bfr-cl-http
     name: client-http
-
-  - protocol: TCP
-    port: 1443
-    name: https
-    targetPort: bfr-https
-
   - protocol: TCP
     port: 8080
     name: http
     targetPort: bfr-http
-
-  - protocol: TCP
-    port: 2443
-    targetPort: bfr-hrz-https
-    name: horizon-https

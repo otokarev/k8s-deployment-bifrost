@@ -50,7 +50,7 @@ stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
 # BIFROST
 ##
 stellar_bifrost_sql_instance: "{{project}}:{{region}}:{{stellar_bifrost_sql_instance_id}}=tcp:5432"
-stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.2"
+stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.3"
 stellar_bifrost_ssl_crt_filename: "{{stellar_bifrost_ssl_crt_path | basename}}"
 stellar_bifrost_ssl_key_filename: "{{stellar_bifrost_ssl_key_path | basename}}"
 

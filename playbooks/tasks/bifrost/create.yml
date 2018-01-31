@@ -3,10 +3,10 @@
   when: stellar_bifrost_sql_instance_id is defined
 
 - name: Deploy Bifrost lb static IP
-  shell: gcloud compute addresses create {{namespace}}-stellar-bifrost-lb-ip --region={{region}}
+  shell: gcloud compute addresses create {{namespace}}-stellar-bifrost-lb-ip --global
   ignore_errors: yes
 - name: Set bifrost_lb_ip
-  shell: gcloud compute addresses list --regions={{region}} | grep {{namespace}}-stellar-bifrost-lb-ip | gawk '{print $3}'
+  shell: gcloud compute addresses list --global | grep {{namespace}}-stellar-bifrost-lb-ip | gawk '{print $2}'
   register: output
 - set_fact:
     bifrost_lb_ip: "{{output.stdout_lines[0]}}"
@@ -15,6 +15,8 @@
   register: output
 - set_fact:
     stellar_lb_ip: "{{output.stdout_lines[0]}}"
+
+- debug: var=bifrost_lb_ip
 
 - name: Deploy secret with database client credentials
   shell: kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json={{stellar_bifrost_sql_client_key_path}}
@@ -45,8 +47,15 @@
   include_tasks: utils/kubectl-create.yaml
   vars:
     template: svc/bifrost.yaml.j2
+
 - name: Deploy bifrost controller
   include_tasks: utils/kubectl-create-or-replace.yaml
   vars:
     controller_kind: sts
+    controller_name: bifrost
+
+- name: Deploy bifrost ingress
+  include_tasks: utils/kubectl-create-or-replace.yaml
+  vars:
+    controller_kind: ing
     controller_name: bifrost

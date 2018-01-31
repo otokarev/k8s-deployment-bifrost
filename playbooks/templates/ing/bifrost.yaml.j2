@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+ name: bifrost
+ annotations:
+   kubernetes.io/ingress.global-static-ip-name: "{{namespace}}-stellar-bifrost-lb-ip"
+   #kubernetes.io/ingress.allow-http: "false"
+   #kubernetes.io/ingress.class: "gce"
+spec:
+  tls:
+  - secretName: stellar-bifrost-tls-secret
+  rules:
+  - http:
+      paths:
+      - path: /horizon
+        backend:
+          serviceName: stellar-backend
+          servicePort: 8000 #horizon-http
+      - path: /bifrost
+        backend:
+          serviceName: bifrost-backend
+          servicePort: 8080 #http
+      - path: /
+        backend:
+          serviceName: bifrost-backend
+          servicePort: 80 #client-http
+  backend:
+    serviceName: bifrost-backend
+    servicePort: 80 #client-http
