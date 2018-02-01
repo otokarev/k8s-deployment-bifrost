@@ -1,0 +1,8 @@
+##
+# BALANCER IPS
+##
+- name: Deploy ingress resources
+  include_tasks: utils/kubectl-create.yaml
+  vars:
+    template: ingress-nginx.yaml.j2
+

@@ -5,6 +5,9 @@ metadata:
   labels:
     app: stellar
     tier: frontend
+  annotations:
+    acme/certificate: '{{stellar_domain_name}}'
+    acme/secretName: 'stellar-tls-secret'
 spec:
   type: LoadBalancer
   loadBalancerIP: "{{stellar_lb_ip}}"

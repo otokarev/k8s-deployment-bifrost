@@ -38,8 +38,6 @@ stellar_core_config_version: 1
 #
 # STELLAR HORIZON
 #
-stellar_horizon_ssl_crt_path: /somewhere/certs/cert.crt
-stellar_horizon_ssl_key_path: /somewhere/certs/cert.key
 
 ##
 # BIFROST
@@ -71,10 +69,6 @@ stellar_bifrost_cfg:
 
 stellar_bifrost_asset_price: 1
 stellar_bifrost_presale: 0
-
-# Letsencrypt is used instead
-#stellar_bifrost_ssl_crt_path: /somewhere/certs/cert.crt
-#stellar_bifrost_ssl_key_path: /somewhere/certs/cert.key
 
 ##
 # STELLAR BIFROST CLIENT (sample)

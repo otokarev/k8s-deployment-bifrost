@@ -31,14 +31,6 @@
   shell: kubectl create secret generic stellar-core-cfg-{{stellar_core_config_version}} --from-file=stellar-core.cfg={{stellar_core_cfg_path}}
   ignore_errors: yes
 
-- name: Deploy secret with Horizon Proxy SSL credentials and nginx config
-  shell: >
-    kubectl create secret generic stellar-horizon-proxy-secret \
-    --from-file={{stellar_horizon_ssl_crt_path}} \
-    --from-file={{stellar_horizon_ssl_key_path}} \
-    --from-file={{nginx_proxy_cfg_template_path}}
-  ignore_errors: yes
-
 - name: Deploy stellar service
   include_tasks: utils/kubectl-create.yaml
   vars:
