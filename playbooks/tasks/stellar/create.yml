@@ -36,6 +36,18 @@
   vars:
     template: svc/stellar.yaml.j2
 
+- name: Wait till letsencrypt controller generates certificate
+  shell: |
+    for i in $(seq 10); do
+      sleep 1;
+      if [ "$(kubectl get secret | grep stellar-tls-secret)" != "" ]; then
+        echo "letsencrypt's ssl cert secret generated";
+        exit 0;
+      fi;
+    done;
+    echo "letsencrypt's ssl cert secret is not detected";
+    exit 1;
+
 - name: Deploy stellar controller
   include_tasks: utils/kubectl-create-or-replace.yaml
   vars:

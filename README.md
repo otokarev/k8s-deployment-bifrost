@@ -40,6 +40,11 @@ Deploy a cluster
 ansible-playbook -i dev playbooks/deploy-cluster.yml 
 ```
 
+Deploy letsencript controller
+```$xslt
+ansible-playbook -i dev ./playbooks/deploy-letsencrypt.yml
+```
+
 Drop the cluster (drops cluster only, leaves IPs, disks untouched)
 ```
 ansible-playbook -i dev playbooks/drop-cluster.yml 
@@ -73,16 +78,22 @@ Drop `geth` only
 ansible-playbook -i dev playbooks/drop-geth.yml 
 ```
 ### Stellar
-Deploy `stellar` only
+#### Deploy `stellar` only
+
+Prerequisites:
+1. `stellar_domain_name` domain must be managed by Google Cloud DNS
+
 ```
 ansible-playbook -i dev playbooks/deploy-stellar.yml 
 ```
-Drop `stellar` only
+Manually update `stellar_domain_name`s IP through Google Cloud Console
+
+#### Drop `stellar` only
 ```
 ansible-playbook -i dev playbooks/drop-stellar.yml 
 ```
 
-Change Stellar Core configuration (`stellar-core.cfg`) procedure:
+#### Change Stellar Core configuration (`stellar-core.cfg`) procedure:
 * modify `stellar-core.cfg`
 * increment `stellar_core_config_version` in `group_vars` file
 * Run `ansible-playbook -i dev playbooks/deploy-stellar.yml`

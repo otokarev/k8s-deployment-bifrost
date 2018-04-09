@@ -1,6 +1,7 @@
 - name: Create cluster
   shell: >
     gcloud container clusters create {{cluster_name}}
+    --cluster-version=1.7.15-gke.0
     --no-enable-cloud-logging
     --enable-cloud-monitoring
     --no-enable-cloud-endpoints
@@ -14,6 +15,8 @@
   vars:
     template: ns/namespaces.yaml.j2
 
+- name: Load credentials
+  include_tasks: tasks/init.yml
 - name: Deploy secret with nginx proxy template
   shell: >
     kubectl create secret generic nginx-proxy-cfg-template \
