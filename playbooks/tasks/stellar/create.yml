@@ -38,7 +38,7 @@
 
 - name: Wait till letsencrypt controller generates certificate
   shell: |
-    for i in $(seq 10); do
+    for i in $(seq 120); do
       sleep 1;
       if [ "$(kubectl get secret | grep stellar-tls-secret)" != "" ]; then
         echo "letsencrypt's ssl cert secret generated";

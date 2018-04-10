@@ -1,0 +1,2 @@
+- name: Check letsencrypt-controller availability
+  shell: kubectl get deploy --namespace kube-system -o go-template='{{"{{"}}range .items {{"}}{{"}} if and (eq "letsencrypt-controller" .metadata.name) (gt .status.readyReplicas 0.0) {{"}}"}}available{{"{{end}}{{end}}"}}' | grep available
