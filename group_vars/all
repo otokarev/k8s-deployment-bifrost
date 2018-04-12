@@ -15,7 +15,7 @@ storage_class_parameters_type: pd-standard
 ##
 # GETH
 ##
-geth_image: ethereum/client-go
+geth_image: ethereum/client-go:v1.8.3
 geth_data_disk: geth-data
 geth_args: "--datadir=/data --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth --testnet --cache=2048 --fast"
 

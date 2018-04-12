@@ -1,6 +1,7 @@
 - name: Create cluster
   shell: >
     gcloud container clusters create {{cluster_name}}
+    --cluster-version=1.7.15-gke.0
     --no-enable-cloud-logging
     --enable-cloud-monitoring
     --no-enable-cloud-endpoints
