@@ -5,16 +5,9 @@ Kind of deployment automation for Bifrost
 ## Docker Compose prototype
 ### Prerequisites
 
-**BEWARE**: in this repo [git-submodules](https://github.com/blog/2104-working-with-submodules) are used!
-
 Initial checkout:
 ```text
-git clone --recursive git@github.com:otokarev/k8s-deployment-bifrost.git
-```
-
-or run after `git clone` from project folder:
-```text
-git submodule update --init --recursive
+git clone git@github.com:otokarev/k8s-deployment-bifrost.git
 ```
 
 ### Test Environment for workstation

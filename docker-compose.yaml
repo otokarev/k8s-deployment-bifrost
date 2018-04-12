@@ -9,7 +9,7 @@ services:
   ##
   core:
     restart: always
-    build: ./docker-stellar-core
+    image: otokarev/stellar-core:v0.1.7
     ports:
       - 11626
     volumes:
@@ -38,7 +38,7 @@ services:
   # horizon-init: Restart until exit with 0 status that means that DB schema loaded successfully
   horizon-init:
     restart: on-failure
-    build: ./docker-stellar-horizon
+    image: otokarev/stellar-horizon:v0.1.2
     command:
       - db
       - init
@@ -48,7 +48,7 @@ services:
       - horizon-db
   horizon:
     restart: always
-    build: ./docker-stellar-horizon
+    image: otokarev/stellar-horizon:v0.1.2
     command:
       - --db-url=postgres://stellar:1q2w3e@horizon-db/horizon?sslmode=disable
       - --stellar-core-db-url=postgres://stellar:1q2w3e@core-db/core?sslmode=disable
@@ -123,13 +123,13 @@ services:
   ##
   bifrost-init:
     restart: on-failure
-    build: ./docker-stellar-bifrost
+    image: otokarev/stellar-bifrost:v0.1.1
     command: ["init"]
     environment:
       BIFROST_DB_DSN: postgres://stellar:1q2w3e@bifrost-db/bifrost?sslmode=disable
   bifrost:
     restart: always
-    build: ./docker-stellar-bifrost
+    image: otokarev/stellar-bifrost:v0.1.1
     command: ["server"]
     environment:
       BIFROST_CFG: >
@@ -165,7 +165,7 @@ services:
   ##
   bifrost-app:
     restart: always
-    build: ./docker-stellar-bifrost-client
+    image: otokarev/stellar-bifrost-client:v0.1.0
     ports:
       - 8030:3000
     depends_on:
