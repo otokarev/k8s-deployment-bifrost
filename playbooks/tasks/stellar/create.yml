@@ -28,7 +28,9 @@
 # Deploy STELLAR
 ##
 - name: Create Stellar config secret
-  shell: kubectl create secret generic stellar-core-cfg-{{stellar_core_config_version}} --from-file=stellar-core.cfg={{stellar_core_cfg_path}}
+  shell: |
+    kubectl create secret generic stellar-core-cfg-{{stellar_core_config_version}} \
+    {% for cfg in  stellar_core_cfg_paths %}--from-file=stellar-{{loop.index0}}.cfg={{cfg}} {% endfor %}
   ignore_errors: yes
 
 - name: Deploy stellar service

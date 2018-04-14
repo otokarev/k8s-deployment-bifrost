@@ -46,6 +46,7 @@ spec:
               echo "/data/buckets does not exist, initialize DB schema";
               NONEWDB="";
               fi;
+              export STELLAR_CORE_CFG=/configs/$HOSTNAME.cfg;
               /bin/bash /start
           readinessProbe:
             tcpSocket:

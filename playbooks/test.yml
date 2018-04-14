@@ -1,15 +1,17 @@
 - name: Deploy all
   hosts: localhost
   connection: local
+  gather_facts: no
+  vars:
+    configs:
+      - stellar-0
+      - stellar-1
+    a: q
 
   tasks:
-  - name: Load credentials
-    include_tasks: tasks/init.yml
-  #- set_fact: version="{{'hui.yaml.j2'|regex_replace('\.j2$')}}"
-  #- debug: var=version
-  - include_tasks: utils/kubectl-create-or-replace.yaml
-    vars:
-      controller_name: geth
-      controller_kind: sts
+  - set_fact: a="{% for item in configs %} hui {% endfor %}"
+  - debug: var=a
+  - set_fact: version="{{configs}}"
+  - debug: var=version
 
 

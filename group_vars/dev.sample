@@ -29,12 +29,16 @@ geth_args: >
 ##
 # STELLAR
 ##
+stellar_domain_name: <stellar service domain>
 stellar_storage_capacity_gb: 40
 #
 # STELLAR CORE
 #
-stellar_core_cfg_path: /somewhere/stellar-core.cfg
 stellar_core_config_version: 1
+stellar_core_cfg_paths:
+  - ./files/stellar-core-0.cfg
+  - ./files/stellar-core-1.cfg
+
 #
 # STELLAR HORIZON
 #
