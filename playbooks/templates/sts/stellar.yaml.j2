@@ -38,6 +38,7 @@ spec:
             - "sh"
             - "-c"
             - |
+              apk add --no-cache bash
               if [ -d /data/buckets ];
               then
               echo "/data/buckets exists, so skip DB schema creation";
@@ -48,11 +49,22 @@ spec:
               fi;
               export STELLAR_CORE_CFG=/configs/$HOSTNAME.cfg;
               /bin/bash /start
-          readinessProbe:
+          livenessProbe:
             tcpSocket:
               port: 11626
             initialDelaySeconds: 3
             periodSeconds: 3
+          readinessProbe:
+            exec:
+              command:
+                - "/bin/bash"
+                - "-c"
+                - |
+                  T=`/usr/local/bin/stellar-core --conf /$HOSTNAME.cfg --c info | egrep '[[:blank:]]+"age" : [[:digit:]]+,'` \
+                  && [[ $T =~ [[:blank:]]([[:digit:]]+), ]] \
+                  && [[ "${BASH_REMATCH[1]}" -lt "10" ]]
+            initialDelaySeconds: 10
+            periodSeconds: 10
           volumeMounts:
           - name: stellar-core-cfg
             mountPath: /configs
