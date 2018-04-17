@@ -62,7 +62,10 @@ Drop all apps
 ansible-playbook -i dev playbooks/drop-all.yml 
 ```
 
-By default `playbooks/drop-*` does not destroy disks and IPs. To force disks deletion use `-e force_disks_drop=1`. To force IPs deletion use `-e force_ips_drop=1`.
+By default `playbooks/drop-*` does not destroy disks, secrets and IPs.
+ * To force disks deletion use `-e force_disks_drop=1`
+ * To force IPs deletion use `-e force_ips_drop=1`
+ * To force secrets deletion use `-e force_secrets_drop=1`
 
 Example:
 ```

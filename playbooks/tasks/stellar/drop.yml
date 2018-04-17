@@ -10,6 +10,11 @@
     executable: /bin/bash
   when: force_secrets_drop is defined
 
+- name: Delete stellar core config secrets
+  shell: kubectl delete secret stellar-tls-secret
+  ignore_errors: yes
+  when: force_secrets_drop is defined
+
 - name: Delete stellar service
   include_tasks: utils/kubectl-delete.yaml
   vars:

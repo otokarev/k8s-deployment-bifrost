@@ -23,7 +23,6 @@ geth_args: >
     --datadir=/data
     --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth
     --ws --wsaddr=0.0.0.0 --wsorigins=* --wsapi=net,eth
-    --ipcdisable
     --testnet --cache=2048 --light
 
 ##
