@@ -14,3 +14,11 @@
   include_tasks: utils/kubectl-create.yaml
   vars:
     template: ns/namespaces.yaml.j2
+
+- name: Load credentials
+  include_tasks: tasks/init.yml
+- name: Deploy secret with nginx proxy template
+  shell: >
+    kubectl create secret generic nginx-proxy-cfg-template \
+    --from-file={{nginx_proxy_cfg_template_path}}
+  ignore_errors: yes

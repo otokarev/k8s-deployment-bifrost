@@ -4,7 +4,7 @@
   when: stellar_bifrost_sql_instance_id is defined
 
 - name: Delete bifrost lb static IP
-  shell: gcloud compute addresses delete -q {{namespace}}-stellar-bifrost-lb-ip --region={{region}}
+  shell: gcloud compute addresses delete -q {{namespace}}-stellar-bifrost-lb-ip --global
   ignore_errors: yes
   when: force_ips_drop is defined
 
@@ -14,17 +14,23 @@
   with_items:
     - 'cloudsql-instance-credentials'
     - 'stellar-bifrost-credentials'
+  when: force_secrets_drop is defined
 
 - name: Delete bifrost service
   include_tasks: utils/kubectl-delete.yaml
   vars:
     template: svc/bifrost.yaml.j2
-    bifrost_lb_ip: '127.0.0.1' #dummy value to make template work
+    stellar_bifrost_domain_name: '' #dummy value to make template work
 
 - name: Delete bifrost controller
   include_tasks: utils/kubectl-delete.yaml
   vars:
     template: sts/bifrost.yaml.j2
-    bifrost_lb_ip: '127.0.0.1' #dummy value to make template work
     stellar_lb_ip: '127.0.0.1' #dummy value to make template work
+
+- name: Delete bifrost ingress
+  include_tasks: utils/kubectl-delete.yaml
+  vars:
+    template: ing/bifrost.yaml.j2
+
 

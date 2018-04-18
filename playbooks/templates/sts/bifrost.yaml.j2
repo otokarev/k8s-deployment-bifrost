@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: bifrost
+        bifrostApp: "1"
     spec:
       affinity:
         podAntiAffinity:
@@ -66,7 +67,7 @@ spec:
                 name: stellar-bifrost-credentials
                 key: STELLAR_BIFROST_DATABASE_URL
           ports:
-          - name: http
+          - name: bfr-http
             containerPort: 8000
           readinessProbe:
             tcpSocket:
@@ -77,17 +78,23 @@ spec:
         - name: client
           image: "{{stellar_bifrost_client_image}}"
           ports:
-          - name: client-http
+          - name: bfr-cl-http
             containerPort: 3000
           env:
             - name: HORIZON_URL
-              value: "https://{{stellar_lb_ip}}:$(STELLAR_FRONTEND_SERVICE_PORT_HORIZON_HTTPS)"
+              value: "https://{{stellar_bifrost_domain_name}}/horizon"
             - name: BIFROST_URL
-              value: "http://{{bifrost_lb_ip}}:$(BIFROST_FRONTEND_SERVICE_PORT_HTTP)"
+              value: "https://{{stellar_bifrost_domain_name}}/bifrost"
             - name: ISSUING_ACCOUNT
               value: "{{stellar_bifrost_cfg.stellar.issuer_public_key}}"
             - name: NODE_ENV
               value: "{{stellar_bifrost_client_env}}"
+            - name: ASSET_CODE
+              value: "{{stellar_bifrost_cfg.stellar.token_asset_code}}"
+            - name: ASSET_PRICE
+              value: "{{stellar_bifrost_asset_price}}"
+            - name: PRESALE
+              value: "{{stellar_bifrost_presale}}"
       volumes:
         - name: cloudsql-instance-credentials
           secret:

@@ -1,20 +1,20 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: bifrost-frontend
+  name: bifrost-backend
   labels:
     app: bifrost
-    tier: frontend
+    tier: backend
 spec:
-  type: LoadBalancer
-  loadBalancerIP: "{{bifrost_lb_ip}}"
+  type: NodePort
   selector:
-    app: bifrost
+    bifrostApp: "1"
   ports:
   - protocol: TCP
-    port: 8000
-    name: http
-  - protocol: TCP
     port: 80
-    targetPort: 3000
+    targetPort: bfr-cl-http
     name: client-http
+  - protocol: TCP
+    port: 8080
+    name: http
+    targetPort: bfr-http

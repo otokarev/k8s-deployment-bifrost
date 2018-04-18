@@ -1,0 +1,36 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: letsencrypt-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: letsencrypt-controller
+      annotations:
+        iam.amazonaws.com/role: "letsencrypt-controller"
+    spec:
+      containers:
+        - image: tazjin/letsencrypt-controller:1.8-SNAPSHOT
+          imagePullPolicy: Always
+          name: letsencrypt-controller
+          env:
+          #- name: ACME_URL
+          #  value: https://acme-staging.api.letsencrypt.org/directory
+          - name: CERTIFICATE_FILENAME
+            value: tls.crt
+          - name: KEY_FILENAME
+            value: tls.key
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /credentials/credentials.json
+          volumeMounts:
+            - name: letsencrypt-service-credentials
+              mountPath: /credentials/
+              readOnly: true
+      volumes:
+        - name: letsencrypt-service-credentials
+          secret:
+            secretName: letsencrypt-service-credentials

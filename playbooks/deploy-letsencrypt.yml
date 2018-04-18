@@ -1,4 +1,4 @@
-- name: Drop cluster
+- name: Deploy Letsencrypt service
   hosts: localhost
   connection: local
   gather_facts: no
@@ -9,5 +9,5 @@
   tasks:
   - name: Load credentials
     include_tasks: tasks/init.yml
-  - name: Drop Kubernates cluster
-    include_tasks: tasks/cluster/drop.yml
+  - name: Deploy Letsencrypt
+    include_tasks: tasks/letsencrypt/create.yml

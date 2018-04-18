@@ -28,21 +28,27 @@
 # Deploy STELLAR
 ##
 - name: Create Stellar config secret
-  shell: kubectl create secret generic stellar-core-cfg-{{stellar_core_config_version}} --from-file=stellar-core.cfg={{stellar_core_cfg_path}}
-  ignore_errors: yes
-
-- name: Deploy secret with Horizon Proxy SSL credentials and nginx config
-  shell: >
-    kubectl create secret generic stellar-horizon-proxy-secret \
-    --from-file={{stellar_horizon_ssl_crt_path}} \
-    --from-file={{stellar_horizon_ssl_key_path}} \
-    --from-file={{stellar_horizon_proxy_cfg_template_path}}
+  shell: |
+    kubectl create secret generic stellar-core-cfg-{{stellar_core_config_version}} \
+    {% for cfg in  stellar_core_cfg_paths %}--from-file=stellar-{{loop.index0}}.cfg={{cfg}} {% endfor %}
   ignore_errors: yes
 
 - name: Deploy stellar service
   include_tasks: utils/kubectl-create.yaml
   vars:
     template: svc/stellar.yaml.j2
+
+- name: Wait till letsencrypt controller generates certificate
+  shell: |
+    for i in $(seq 120); do
+      sleep 1;
+      if [ "$(kubectl get secret | grep stellar-tls-secret)" != "" ]; then
+        echo "letsencrypt's ssl cert secret generated";
+        exit 0;
+      fi;
+    done;
+    echo "letsencrypt's ssl cert secret is not detected";
+    exit 1;
 
 - name: Deploy stellar controller
   include_tasks: utils/kubectl-create-or-replace.yaml

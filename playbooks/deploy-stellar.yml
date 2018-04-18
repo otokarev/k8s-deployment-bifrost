@@ -7,6 +7,7 @@
     additional_zones:
 
   tasks:
+  - include_tasks: utils/check-letsencrypt-availability.yaml
   - name: Load credentials
     include_tasks: tasks/init.yml
   - name: Deploy Stellar

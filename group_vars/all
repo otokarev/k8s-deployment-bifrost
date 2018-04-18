@@ -3,6 +3,12 @@ replicas: 1
 machine_type: n1-standard-2
 
 ##
+# COMMON
+##
+nginx_proxy_cfg_template_path: ./files/nginx-proxy.template
+nginx_ws_proxy_cfg_template_path: ./files/nginx-ws-proxy.template
+
+##
 # SQL INSTANCE
 ##
 sql_cloudsql_proxy_image: gcr.io/cloudsql-docker/gce-proxy:1.09
@@ -17,7 +23,11 @@ storage_class_parameters_type: pd-standard
 ##
 geth_image: ethereum/client-go:v1.8.3
 geth_data_disk: geth-data
-geth_args: "--datadir=/data --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth --testnet --cache=2048 --fast"
+geth_args: >
+    --datadir=/data
+    --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=net,eth
+    --ws --wsaddr=0.0.0.0 --wsorigins=* --wsapi=net,eth
+    --testnet --cache=2048 --fast
 
 ##
 # STELLAR
@@ -25,24 +35,21 @@ geth_args: "--datadir=/data --rpc --rpcaddr=0.0.0.0 --rpccorsdomain=* --rpcapi=n
 #
 # STELLAR CORE
 #
-stellar_core_image: "otokarev/stellar-core:v0.1.8"
+stellar_core_image: "otokarev/stellar-core:v0.1.11-v9.2.0-113-g45375e19-dirty"
 stellar_core_data_disk: core-data
 stellar_core_config_version: 1
 #
 # STELLAR HORIZON
 #
-stellar_horizon_proxy_cfg_template_path: ./files/https-proxy.template
-stellar_horizon_image: "otokarev/stellar-horizon:v0.1.2-v0.11.1"
-stellar_horizon_ssl_crt_filename: "{{stellar_horizon_ssl_crt_path | basename}}"
-stellar_horizon_ssl_key_filename: "{{stellar_horizon_ssl_key_path | basename}}"
+stellar_horizon_image: "otokarev/stellar-horizon:v0.1.3-v0.12.3"
 
 ##
 # BIFROST
 ##
 stellar_bifrost_sql_instance: "{{project}}:{{region}}:{{stellar_bifrost_sql_instance_id}}=tcp:5432"
-stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.1"
+stellar_bifrost_image: "otokarev/stellar-bifrost:v0.1.3"
 
 ##
 # STELLAR BIFROST CLIENT (sample)
 ##
-stellar_bifrost_client_image: "otokarev/stellar-bifrost-client:v0.1.0"
+stellar_bifrost_client_image: "otokarev/stellar-bifrost-client:v0.1.1-p1"

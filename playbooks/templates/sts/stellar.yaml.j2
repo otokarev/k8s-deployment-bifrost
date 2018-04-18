@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: stellar
+        bifrostApp: "1"
     spec:
       affinity:
         podAntiAffinity:
@@ -37,6 +38,7 @@ spec:
             - "sh"
             - "-c"
             - |
+              apk add --no-cache bash
               if [ -d /data/buckets ];
               then
               echo "/data/buckets exists, so skip DB schema creation";
@@ -45,12 +47,24 @@ spec:
               echo "/data/buckets does not exist, initialize DB schema";
               NONEWDB="";
               fi;
+              export STELLAR_CORE_CFG=/configs/$HOSTNAME.cfg;
               /bin/bash /start
-          readinessProbe:
+          livenessProbe:
             tcpSocket:
               port: 11626
             initialDelaySeconds: 3
             periodSeconds: 3
+          readinessProbe:
+            exec:
+              command:
+                - "/bin/bash"
+                - "-c"
+                - |
+                  T=`/usr/local/bin/stellar-core --conf /$HOSTNAME.cfg --c info | egrep '[[:blank:]]+"age" : [[:digit:]]+,'` \
+                  && [[ $T =~ [[:blank:]]([[:digit:]]+), ]] \
+                  && [[ "${BASH_REMATCH[1]}" -lt "10" ]]
+            initialDelaySeconds: 10
+            periodSeconds: 10
           volumeMounts:
           - name: stellar-core-cfg
             mountPath: /configs
@@ -138,8 +152,11 @@ spec:
         - name: horizon-proxy
           image: nginx
           volumeMounts:
-            - name: stellar-horizon-proxy-data
+            - name: tls-data
               mountPath: /certs
+              readOnly: true
+            - name: nginx-proxy-cfg-template-data
+              mountPath: /cfg-template
               readOnly: true
           ports:
           - name: horizon-https
@@ -152,21 +169,24 @@ spec:
            - name: BACKEND_URL
              value: http://127.0.0.1:8000
            - name: SSL_CERT_PATH
-             value: "/certs/{{stellar_horizon_ssl_crt_filename}}"
+             value: "/certs/tls.crt"
            - name: SSL_CERT_KEY_PATH
-             value: "/certs/{{stellar_horizon_ssl_key_filename}}"
+             value: "/certs/tls.key"
           command:
             - "/bin/bash"
             - "-c"
-            - "envsubst '$''HOST $''PORT $''BACKEND_URL $''SSL_CERT_PATH $''SSL_CERT_KEY_PATH' < /certs/https-proxy.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+            - "envsubst '$''HOST $''PORT $''BACKEND_URL $''SSL_CERT_PATH $''SSL_CERT_KEY_PATH' < /cfg-template/nginx-proxy.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
 
       volumes:
         - name: stellar-core-cfg
           secret:
             secretName: stellar-core-cfg-{{stellar_core_config_version}}
-        - name: stellar-horizon-proxy-data
+        - name: tls-data
           secret:
-            secretName: stellar-horizon-proxy-secret
+            secretName: stellar-tls-secret
+        - name: nginx-proxy-cfg-template-data
+          secret:
+            secretName: nginx-proxy-cfg-template
 
   volumeClaimTemplates:
   - metadata:

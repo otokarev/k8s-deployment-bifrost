@@ -1,4 +1,4 @@
-- name: Drop cluster
+- name: Drop bifrost
   hosts: localhost
   connection: local
   gather_facts: no
@@ -9,5 +9,5 @@
   tasks:
   - name: Load credentials
     include_tasks: tasks/init.yml
-  - name: Drop Kubernates cluster
-    include_tasks: tasks/cluster/drop.yml
+  - name: Drop bifrost
+    include_tasks: tasks/bifrost/drop.yml

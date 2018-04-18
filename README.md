@@ -6,6 +6,7 @@ Kind of deployment automation for Bifrost
 
 ## Prerequisites
 * `Ansible` >= 2.4
+* `kubectl` v1.7.5 installed (can be downloaded as `curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kubectl`)
 * `google-cloud-sdk` installed, `gcloud` configured to have access the target project
 * Create a service account with `Cloud SQL Client` role. Store json-file with private key localy (e.g. in `stellar-sql-client-key.json`)
 * Get somewhere SSL certificate and certificate key and store them locally.
@@ -40,6 +41,11 @@ Deploy a cluster
 ansible-playbook -i dev playbooks/deploy-cluster.yml 
 ```
 
+Deploy letsencript controller
+```$xslt
+ansible-playbook -i dev ./playbooks/deploy-letsencrypt.yml
+```
+
 Drop the cluster (drops cluster only, leaves IPs, disks untouched)
 ```
 ansible-playbook -i dev playbooks/drop-cluster.yml 
@@ -56,7 +62,10 @@ Drop all apps
 ansible-playbook -i dev playbooks/drop-all.yml 
 ```
 
-By default `playbooks/drop-*` does not destroy disks and IPs. To force disks deletion use `-e force_disks_drop=1`. To force IPs deletion use `-e force_ips_drop=1`.
+By default `playbooks/drop-*` does not destroy disks, secrets and IPs.
+ * To force disks deletion use `-e force_disks_drop=1`
+ * To force IPs deletion use `-e force_ips_drop=1`
+ * To force secrets deletion use `-e force_secrets_drop=1`
 
 Example:
 ```
@@ -73,16 +82,22 @@ Drop `geth` only
 ansible-playbook -i dev playbooks/drop-geth.yml 
 ```
 ### Stellar
-Deploy `stellar` only
+#### Deploy `stellar` only
+
+Prerequisites:
+1. `stellar_domain_name` domain must be managed by Google Cloud DNS
+
 ```
 ansible-playbook -i dev playbooks/deploy-stellar.yml 
 ```
-Drop `stellar` only
+Manually update `stellar_domain_name`s IP through Google Cloud Console
+
+#### Drop `stellar` only
 ```
 ansible-playbook -i dev playbooks/drop-stellar.yml 
 ```
 
-Change Stellar Core configuration (`stellar-core.cfg`) procedure:
+#### Change Stellar Core configuration (`stellar-core.cfg`) procedure:
 * modify `stellar-core.cfg`
 * increment `stellar_core_config_version` in `group_vars` file
 * Run `ansible-playbook -i dev playbooks/deploy-stellar.yml`

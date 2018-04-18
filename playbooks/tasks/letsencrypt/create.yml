@@ -1,0 +1,9 @@
+- name: Deploy secret with Letsencrypt service account credentials
+  shell: kubectl create secret generic letsencrypt-service-credentials --from-file=credentials.json={{letsencrypt_service_account_key_path}} --namespace=kube-system
+  ignore_errors: yes
+
+- name: Deploy Letsencrypt controller
+  include_tasks: utils/kubectl-create-or-replace.yaml
+  vars:
+    controller_kind: deploy
+    controller_name: letsencrypt
