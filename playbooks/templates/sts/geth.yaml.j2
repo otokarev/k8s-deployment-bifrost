@@ -47,8 +47,8 @@ spec:
               command:
                 - "/bin/sh"
                 - "-c"
-                - "geth attach --datadir=/data --exec 'var s = eth.syncing; (s.highestBlock - s.currentBlock) < 3;' | grep true"
-            initialDelaySeconds: 10
+                - "geth attach --datadir=/data --exec 'eth && !eth.syncing' | grep true"
+            initialDelaySeconds: 20
             periodSeconds: 10
           volumeMounts:
           - name: geth-data
