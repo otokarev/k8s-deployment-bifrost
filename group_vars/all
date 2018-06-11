@@ -1,6 +1,7 @@
 ---
 replicas: 1
 machine_type: n1-standard-2
+gke_cluster_version: 1.8.10-gke.0
 
 ##
 # COMMON
@@ -35,7 +36,7 @@ geth_args: >
 #
 # STELLAR CORE
 #
-stellar_core_image: "otokarev/stellar-core:v0.1.11-v9.2.0-113-g45375e19-dirty"
+stellar_core_image: "otokarev/stellar-core:v0.1.12-v9.2.0-113-g45375e19-dirty"
 stellar_core_data_disk: core-data
 stellar_core_config_version: 1
 #
