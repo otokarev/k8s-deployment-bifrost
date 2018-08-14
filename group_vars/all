@@ -1,7 +1,7 @@
 ---
 replicas: 1
 machine_type: n1-standard-2
-gke_cluster_version: 1.8.10-gke.0
+gke_cluster_version: 1.8.10-gke.2
 
 ##
 # COMMON
