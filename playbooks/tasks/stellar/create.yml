@@ -2,13 +2,14 @@
 # BALANCER IPS
 ##
 - name: Deploy Stellar lb static IP
-  shell: gcloud compute addresses create {{namespace}}-stellar-lb-ip --region={{region}}
+  shell: gcloud compute addresses create {{stellar_loadbalancer_name | default(stellar_loadbalancer_name_default)}} --region={{region}}
   ignore_errors: yes
 - name: Set stellar_lb_ip
-  shell: gcloud compute addresses list --regions={{region}} | grep {{namespace}}-stellar-lb-ip | gawk '{print $3}'
+  shell: gcloud compute addresses list --regions={{region}} | grep {{stellar_loadbalancer_name | default(stellar_loadbalancer_name_default)}} | gawk '{print $3}'
   register: output
 - set_fact:
     stellar_lb_ip: "{{output.stdout_lines[0]}}"
+  ignore_errors: yes
 
 ##
 # DISKS & PERSISTENT VOLUMES(CLASSES)
@@ -37,6 +38,7 @@
   include_tasks: utils/kubectl-create.yaml
   vars:
     template: svc/stellar.yaml.j2
+  ignore_errors: yes
 
 - name: Wait till letsencrypt controller generates certificate
   shell: |

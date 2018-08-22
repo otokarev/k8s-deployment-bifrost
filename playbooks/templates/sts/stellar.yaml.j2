@@ -52,8 +52,8 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 11626
-            initialDelaySeconds: 3
-            periodSeconds: 3
+            initialDelaySeconds: 15
+            periodSeconds: 5
           readinessProbe:
             exec:
               command:
@@ -112,10 +112,10 @@ spec:
           ports:
           - name: horizon-http
             containerPort: 8000
-          readinessProbe:
+          livenessProbe:
             tcpSocket:
               port: 8000
-            initialDelaySeconds: 3
+            initialDelaySeconds: 15
             periodSeconds: 3
           env:
             - name: DATABASE_URL
@@ -141,10 +141,10 @@ spec:
               value: 1q2w3e
             - name: PGPORT
               value: "6432"
-          readinessProbe:
+          livenessProbe:
             tcpSocket:
               port: 6432
-            initialDelaySeconds: 3
+            initialDelaySeconds: 15
             periodSeconds: 3
           volumeMounts:
           - name: stellar-data
@@ -200,3 +200,7 @@ spec:
         requests:
           storage: "{{stellar_storage_capacity_gb}}Gi"
       storageClassName: "{{namespace}}-stellar"
+      selector:
+         matchLabels:
+           service: "stellar"
+           namespace: "{{namespace}}"

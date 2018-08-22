@@ -10,12 +10,12 @@ metadata:
     acme/secretName: 'stellar-tls-secret'
 spec:
   type: LoadBalancer
-  loadBalancerIP: "{{stellar_lb_ip}}"
+  loadBalancerIP: "{{stellar_lb_ip | default('')}}"
   selector:
     app: stellar
   ports:
   - protocol: TCP
-    port: 443
+    port: {{stellar_horizon_https_port | default(stellar_horizon_https_port_default)}}
     name: horizon-https
 ---
 apiVersion: v1
@@ -31,5 +31,5 @@ spec:
     app: stellar
   ports:
   - protocol: TCP
-    port: 8000
+    port: {{stellar_horizon_http_port | default(stellar_horizon_http_port_default)}}
     name: horizon-http

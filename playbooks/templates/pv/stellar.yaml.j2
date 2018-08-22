@@ -8,6 +8,7 @@ provisioner: kubernetes.io/gce-pd
 parameters:
   type: "{{storage_class_parameters_type}}"
   zones: "{{zones | join(',')}}"
+  reclaimPolicy: Retain
 ---
 {% for zone in zones %}
 apiVersion: v1

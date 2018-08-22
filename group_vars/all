@@ -33,6 +33,11 @@ geth_args: >
 ##
 # STELLAR
 ##
+stellar_loadbalancer_name_default: "{{namespace}}-stellar-lb-ip"
+
+stellar_horizon_http_port_default: 8000
+stellar_horizon_https_port_default: 443
+
 #
 # STELLAR CORE
 #

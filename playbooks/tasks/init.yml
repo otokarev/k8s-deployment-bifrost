@@ -1,4 +1,4 @@
 - name: Get k8s credentials from gcloud
-  shell: gcloud container clusters get-credentials {{cluster_name}} --zone {{zones[0]}} --project {{project}}
+  shell: gcloud config set project {{project}}
 - name: Set namespace `{{namespace}}`
   shell: kubectl config set-context $(kubectl config current-context) --namespace={{namespace}}
